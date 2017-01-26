@@ -37,6 +37,8 @@ To use, run the cli
 
 Version 1.0.X
 
+* Windows - [32bit](http://bit.ly/2j6ZfYn),
+[64bit](http://bit.ly/2kv3nO4)
 
 ( If not sure which to get, get the 32bit )
 
