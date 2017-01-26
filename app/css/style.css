@@ -1,0 +1,205 @@
+@import "Roboto/roboto.css";
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  color: #1F1F1F;
+  padding: 0;
+  margin: 0;
+  -webkit-user-select: none;
+  cursor: default;
+  overflow: hidden;
+  background-color: #1F1F1F;
+}
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-thumb {
+  background: #03A9F4;
+}
+.menubar {
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #E0E0E0;
+  height: 33px;
+  line-height: 33px;
+}
+.toolbar {
+  position: absolute;
+  background-color: #FFFFFF;
+  width: 249px;
+}
+.toolbar.map {
+  border-right: 1px solid #E0E0E0;
+}
+.toolbar.obj {
+  right: 0;
+  border-left: 1px solid #E0E0E0;
+}
+.toolbar .block {
+  padding: 3px 0;
+}
+.toolbar .block .header {
+  font-size: 1.3em;
+  padding: 5px 5px 0;
+  margin: 0;
+  height: 30px;
+}
+.toolbar .block .footer {
+  height: 30px;
+  line-height: 30px;
+}
+.toolbar .block .listContainer {
+  overflow: auto;
+  position: relative;
+}
+.toolbar .block .listContainer .list {
+  display: inline-block;
+  min-width: 100%;
+}
+.toolbar .block .listContainer .list .item {
+  box-sizing: border-box;
+  white-space: nowrap;
+  height: 20px;
+  min-width: 100%;
+  line-height: 20px;
+  cursor: pointer;
+}
+.toolbar .block .listContainer .list .item:hover {
+  background-color: #03A9F4 !important;
+  color: #FAFAFA !important;
+}
+.toolbar .block .listContainer .list .item.selected {
+  transition: all 200ms linear;
+  background-color: #29B6F6;
+  color: #FAFAFA;
+}
+.toolbar .block .propsContainer {
+  overflow: auto;
+  position: relative;
+}
+.toolbar .block .propsContainer .props {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0 5px;
+}
+.toolbar .block .propsContainer .props .full {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 5px;
+}
+.toolbar .block .propsContainer .props .half {
+  box-sizing: border-box;
+  width: 50%;
+  padding: 5px;
+}
+.toolbar .block .propsContainer .props .third {
+  box-sizing: border-box;
+  width: 33%;
+  padding: 5px;
+}
+.toolbar .block .propsContainer .props input,
+.toolbar .block .propsContainer .props textarea {
+  box-sizing: border-box;
+  width: 100%;
+}
+.toolbar .block .propsContainer .props textarea {
+  white-space: nowrap;
+  height: 125px;
+}
+.toolbar .block .propsContainer .props button {
+  margin: 0;
+}
+.toolbar .divider {
+  height: 5px;
+  background-color: #E0E0E0;
+  cursor: row-resize;
+}
+input[type=text],
+textarea {
+  border: 1px solid #E0E0E0;
+  border-radius: 3px;
+  padding: 3px;
+  color: #1F1F1F;
+  transition: all 200ms linear;
+}
+input[type=text]:hover,
+textarea:hover {
+  border-color: #03A9F4;
+  color: #1F1F1F;
+}
+input[type=text]:focus,
+textarea:focus {
+  color: #1F1F1F;
+  border-color: #03A9F4;
+  outline: none;
+  box-shadow: inset 0 0 2px #03A9F4;
+}
+input[type=text].error,
+textarea.error {
+  border-color: #F44336;
+  color: #F44336;
+}
+input[type=text].error:focus,
+textarea.error:focus {
+  box-shadow: inset 0 0 2px #F44336;
+}
+canvas {
+  background-color: #1F1F1F;
+}
+.contextMenu {
+  position: absolute;
+  background-color: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  padding: 5px 0;
+  z-index: 2;
+}
+.contextMenu .item {
+  padding: 2px 5px;
+  cursor: pointer;
+}
+.contextMenu .item:hover {
+  background-color: #E0E0E0;
+}
+.veil {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+.hidden {
+  display: none;
+}
+button {
+  height: 24px;
+  min-width: 60px;
+  margin: 0 5px;
+  outline: none;
+  background-color: #FFFFFF;
+  border: 1px solid #E0E0E0;
+  border-radius: 3px;
+  transition: all 150ms linear;
+  cursor: pointer;
+}
+button:hover {
+  border-color: #03A9F4;
+  color: #03A9F4;
+}
+button.accepted {
+  border-color: #00AA00;
+  color: #00AA00;
+}
+button.error {
+  border-color: #AA0000;
+  color: #AA0000;
+}
+button.disabled {
+  cursor: not-allowed;
+}
+button.disabled:hover {
+  border-color: #F44336;
+  color: #F44336;
+}
+canvas {
+  position: absolute;
+  top: 34px;
+}

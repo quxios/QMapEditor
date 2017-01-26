@@ -1,0 +1,220 @@
+// out: style.css
+
+@import "Roboto/roboto.css";
+
+@dark: #1F1F1F;
+@dark2: #1F1F1F;
+
+@light: #FFFFFF;
+@light2: #FAFAFA;
+@light-border: #E0E0E0;
+@light-highlight: #03A9F4;
+@light-disabled: #F44336;
+
+@highlight-color: #03A9F4;
+@highlight-text: #FAFAFA;
+@selected-color: #29B6F6;
+@selected-text: #FAFAFA;
+
+@accepted: #00AA00;
+@error: #AA0000;
+
+body {
+	font-family: 'Roboto', sans-serif;
+	font-size: 14px;
+	color: @dark;
+	padding: 0;
+	margin: 0;
+	-webkit-user-select: none;
+	cursor: default;
+	overflow: hidden;
+	background-color: @dark2;
+}
+::-webkit-scrollbar {
+  width: 12px;
+	height: 12px;
+}
+::-webkit-scrollbar-track {}
+::-webkit-scrollbar-thumb {
+  background: @light-highlight;
+}
+.menubar {
+	background-color: @light;
+	border-bottom: 1px solid @light-border;
+	height: 33px;
+	line-height: 33px;
+}
+.toolbar {
+	position: absolute;
+	background-color: @light;
+	width: 249px;
+	&.map {
+		border-right: 1px solid @light-border;
+	}
+	&.obj {
+		right: 0;
+		border-left: 1px solid @light-border;
+	}
+	.block {
+		padding: 3px 0;
+		.header {
+			font-size: 1.3em;
+			padding: 5px 5px 0;
+			margin: 0;
+			height: 30px;
+		}
+		.footer {
+			height: 30px;
+			line-height: 30px;
+		}
+		.listContainer {
+			overflow: auto;
+			position: relative;
+			.list {
+				display: inline-block;
+				min-width: 100%;
+				.item {
+					box-sizing: border-box;
+					white-space: nowrap;
+					height: 20px;
+					min-width: 100%;
+					line-height: 20px;
+					cursor: pointer;
+					&:hover {
+						background-color: @highlight-color !important;
+						color: @highlight-text !important;
+					}
+					&.selected {
+						transition: all 200ms linear;
+						background-color: @selected-color;
+						color: @selected-text;
+					}
+				}
+			}
+		}
+		.propsContainer {
+			overflow: auto;
+			position: relative;
+			.props {
+				display: flex;
+				flex-wrap: wrap;
+				padding: 0 5px;
+				.full {
+					box-sizing: border-box;
+					width: 100%;
+					padding: 5px;
+				}
+				.half {
+					box-sizing: border-box;
+					width: 50%;
+					padding: 5px;
+				}
+				.third {
+					box-sizing: border-box;
+					width: 33%;
+					padding: 5px;
+				}
+				input, textarea {
+					box-sizing: border-box;
+					width: 100%;
+				}
+				textarea {
+					white-space: nowrap;
+					height: 125px;
+				}
+				button {
+					margin: 0;
+				}
+			}
+		}
+	}
+	.divider {
+		height: 5px;
+		background-color: @light-border;
+		cursor: row-resize;
+	}
+}
+input[type=text], textarea {
+	border: 1px solid @light-border;
+	border-radius: 3px;
+	padding: 3px;
+	color: @dark;
+	transition: all 200ms linear;
+	&:hover {
+		border-color: @light-highlight;
+		color: @dark;
+	}
+	&:focus {
+		color: @dark;
+		border-color: @light-highlight;
+		outline: none;
+		box-shadow: inset 0 0 2px @light-highlight;
+	}
+	&.error {
+		border-color: @light-disabled;
+		color: @light-disabled;
+		&:focus {
+			box-shadow: inset 0 0 2px @light-disabled;
+		}
+	}
+}
+canvas {
+	background-color: @dark2;
+}
+.contextMenu {
+	position: absolute;
+	background-color: @light;
+	border: 1px solid @light-border;
+	padding: 5px 0;
+	z-index: 2;
+	.item {
+		padding: 2px 5px;
+		cursor: pointer;
+		&:hover {
+			background-color: @light-border;
+		}
+	}
+}
+.veil {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+}
+.hidden {
+	display: none;
+}
+button {
+	height: 24px;
+	min-width: 60px;
+	margin: 0 5px;
+	outline: none;
+	background-color: @light;//inherit;
+	border: 1px solid @light-border;
+	border-radius: 3px;
+	transition: all 150ms linear;
+	cursor: pointer;
+	&:hover {
+		border-color: @light-highlight;
+		color: @light-highlight;
+	}
+	&.accepted {
+		border-color: @accepted;
+		color: @accepted;
+	}
+	&.error {
+		border-color: @error;
+		color: @error;
+	}
+}
+button.disabled {
+	cursor: not-allowed;
+	&:hover {
+		border-color: @light-disabled;
+		color: @light-disabled;
+	}
+}
+canvas {
+	position: absolute;
+	top: 34px;
+}

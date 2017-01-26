@@ -1,0 +1,37 @@
+{
+  "name": "QMapEditor",
+  "version": "1.0.0",
+  "main": "app/js/main.js",
+  "author": "Quxios",
+  "description": "Map Editor",
+  "license": "MIT",
+  "dependencies": {
+    "babel-polyfill": "^6.22.0",
+    "pixi.js": "^4.2.2",
+    "react": "^15.3.2",
+    "react-dom": "^15.3.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.18.0",
+    "babel-preset-electron": "^0.37.8",
+    "babel-preset-react": "^6.16.0",
+    "babel-register": "^6.18.0",
+    "electron": "^1.4.6",
+    "electron-builder": "^8.5.3"
+  },
+  "scripts": {
+    "compile-babel": "babel app -d compiled --copy-files -i node_modules,style.less",
+    "compile": "npm run compile-babel",
+    "build-64": "npm run compile && build -w --x64",
+    "build-32": "npm run compile && build -w --ia32"
+  },
+  "build": {
+    "win": {
+      "target": "dir",
+      "icon": "app/imgs/icon.ico"
+    }
+  },
+  "directories": {
+    "app": "compiled"
+  }
+}
