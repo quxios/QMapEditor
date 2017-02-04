@@ -5,6 +5,7 @@ import {
   deleteObject,
   deleteAllObjects,
   selectObject,
+  copyObject,
   setContext,
   closeContext
 } from './../manager/actions'
@@ -67,8 +68,8 @@ export default class ObjList extends React.Component {
   onAdd() {
     Manager.run(addObject());
   }
-  onDuplicate(obj = this.state.selectedObj, event) {
-    console.log('Duplicate');
+  onDuplicate(obj, event) {
+    Manager.run(copyObject(obj));
     Manager.run(closeContext());
   }
   onDelete(obj, event) {

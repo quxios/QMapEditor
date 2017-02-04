@@ -95,6 +95,10 @@ export default class Manager {
         ObjsData.removeAll();
         break;
       }
+      case 'COPY_OBJECT': {
+        ObjsData.copy(action.args);
+        break;
+      }
       case 'SELECT_OBJECT': {
         ObjsData.select(action.args);
         break;

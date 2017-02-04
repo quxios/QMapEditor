@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Select a Frame</title>
+		<link rel="stylesheet" href="css/style.css">
+    <style>
+      body {
+        background-color: #ffffff;
+        padding: 5px;
+      }
+    </style>
+	</head>
+  <body oncontextmenu="return false;">
+		<div id="frameSelect"></div>
+		<script>
+			if (process.env.PRODUCTION === 'false') {
+				require('babel-register')
+			}
+			require('./js/frameSelect')
+		</script>
+	</body>
+</html>

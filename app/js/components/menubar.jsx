@@ -59,8 +59,9 @@ export default class Menubar extends React.Component {
         }
         fs.watchFile(file, (current, prev) => {
           this._watching[2] = JSON.stringify(fs.statSync(file).mtime);
+          var selected = this.state.selectedMap;
           Manager.run(loadFile(this._watching[1]));
-          Manager.run(selectMap(this.props.selectedMap));
+          Manager.run(selectMap(selected));
         })
         this._watching = [file, projectFile, JSON.stringify(stats.mtime)];
       }
@@ -84,12 +85,16 @@ export default class Menubar extends React.Component {
       }, 1000)
     });
   }
+  onHelp() {
+    ipcRenderer.send('openHelp');
+  }
   onFocus() {
     if (this.props.validProject && this._watching) {
       let mtime = JSON.stringify(fs.statSync(this._watching[0]).mtime);
       if (mtime !== this._watching[2]) {
+        var selected = this.state.selectedMap;
         Manager.run(loadFile(this._watching[1]));
-        Manager.run(selectMap(this.props.selectedMap));
+        Manager.run(selectMap(selected));
         this._watching[2] = mtime;
       }
     }
@@ -99,21 +104,28 @@ export default class Menubar extends React.Component {
     const { highlightScreenshot, highlightSave } = this.state
     return (
       <div className='menubar'>
-        <button onClick={::this.onLoad}>
-          Load
-        </button>
-        { this.state.selectedMap > 0 ?
-          <button onClick={::this.onSave} className={highlightSave ? 'accepted' : ''}>
-            Save
+        <div className='left'>
+          <button onClick={::this.onLoad}>
+            Load
           </button>
-          : null
-        }
-        { this.state.selectedMap > 0 ?
-          <button onClick={::this.onScreenshot} className={highlightScreenshot ? 'accepted' : ''}>
-            Screenshot
+          { this.state.selectedMap > 0 ?
+            <button onClick={::this.onSave} className={highlightSave ? 'accepted' : ''}>
+              Save
+            </button>
+            : null
+          }
+          { this.state.selectedMap > 0 ?
+            <button onClick={::this.onScreenshot} className={highlightScreenshot ? 'accepted' : ''}>
+              Screenshot
+            </button>
+            : null
+          }
+        </div>
+        <div className='right'>
+          <button onClick={::this.onHelp} className='help'>
+            Help
           </button>
-          : null
-        }
+        </div>
       </div>
     )
   }

@@ -98,8 +98,8 @@ export default class Canvas extends React.Component {
   onScreenshot() {
     if (!this.renderer) return;
     if (Stage && Stage._selectedMap > 0) {
-      const width  = Stage._mapWidth * Stage._gridWidth;
-      const height = Stage._mapHeight * Stage._gridHeight;
+      const width  = Stage._mapWidth * 48;
+      const height = Stage._mapHeight * 48;
       const renderTexture = PIXI.RenderTexture.create(width, height);
       const selected = Manager.state.selectedObj;
       const oldX = Stage.x;
@@ -108,8 +108,8 @@ export default class Canvas extends React.Component {
       const oldScaleY = Stage.scale.y;
       Stage.x = 0;
       Stage.y = 0;
-      Stage.scale.x = 1;
-      Stage.scale.y = 1;
+      Stage.scale.x = 48 / Stage._gridWidth;
+      Stage.scale.y = 48 / Stage._gridHeight;
       Manager.run(selectObject(-1));
       this.renderer.render(Stage, renderTexture);
       let image = this.renderer.extract.base64(renderTexture);

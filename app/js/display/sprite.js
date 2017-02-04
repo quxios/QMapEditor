@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import Manager from './../manager'
+import Input from './../manager/input'
 
 import { selectObject, updateObject, sortObjects } from './../manager/actions'
 
@@ -112,6 +113,7 @@ export default class Sprite extends PIXI.Sprite {
     }
   }
   adjustXWithSnap(prevX, nextX) {
+    if (Input.isPressed(0x12)) return nextX;
     prevX += this.width * -this.anchor.x;
     nextX += this.width * -this.anchor.x;
     let dx = nextX - prevX;
@@ -135,6 +137,7 @@ export default class Sprite extends PIXI.Sprite {
     return nextX += this.width * this.anchor.x;
   }
   adjustYWithSnap(prevY, nextY) {
+    if (Input.isPressed(0x12)) return nextY;
     prevY += this.height * -this.anchor.y;
     nextY += this.height * -this.anchor.y;
     let dy = nextY - prevY;

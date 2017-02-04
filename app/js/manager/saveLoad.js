@@ -32,7 +32,8 @@ export function load(args) {
     mapList,
     qMap,
     selectedMap: 0,
-    mapData: []
+    mapData: [],
+    mapObjects: []
   })
   Manager.emit('SELECT_MAP', false);
 }

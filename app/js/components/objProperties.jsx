@@ -1,7 +1,7 @@
 import React from 'react'
 import Manager from './../manager'
 import { updateObject } from './../manager/actions'
-import { remote } from 'electron'
+import { remote, ipcRenderer } from 'electron'
 const dialog = remote.dialog
 
 //import Stage from './../display/stage'
@@ -25,12 +25,15 @@ export default class ObjProperties extends React.Component {
       notes: ''
     }
     this.getStates = ::this.getStates;
+    this.onSetIndex = ::this.onSetIndex;
   }
   componentWillMount() {
     Manager.on('UPDATE_STATE', this.getStates);
+    ipcRenderer.on('setFrameIndex', this.onSetIndex);
   }
   componentWillUnmount() {
     Manager.remove('UPDATE_STATE', this.getStates);
+    ipcRenderer.removeListener('setFrameIndex', this.onSetIndex);
   }
   getStates(newStates) {
     const { selectedObj, mapObjects, projectPath } = newStates;
@@ -124,11 +127,23 @@ export default class ObjProperties extends React.Component {
       // send an error on invalid input
     }
   }
-  onIndexChange(event) {
-    const index = event.target.value;
+  onIndexSelect() {
+    const {
+      projectPath, filePath,
+      cols, rows, index,
+      height, width
+    } = this.state;
+    ipcRenderer.send('openFrameSelect', {
+      projectPath, filePath,
+      cols, rows, index,
+      height, width
+    });
+  }
+  onSetIndex(e, value) {
+    const index = value;
     const maxI = this.state.rows * this.state.cols;
     if (index >= 0 && index < maxI) {
-      this.setState({ index });
+      this.setState({ index }, ::this.onBlur);
     } else {
       // send an error on invalid input
     }
@@ -339,6 +354,10 @@ export default class ObjProperties extends React.Component {
           />
         </div>
         <div className='third'>
+          <button onClick={::this.onIndexSelect}>
+            Select
+          </button>
+          {/*
           <input
             type='text'
             onChange={::this.onIndexChange}
@@ -346,6 +365,7 @@ export default class ObjProperties extends React.Component {
             onKeyDown={::this.checkEnter}
             value={index}
           />
+          */}
         </div>
       </div>
     )

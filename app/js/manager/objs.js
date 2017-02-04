@@ -66,6 +66,26 @@ export function removeAll() {
   })
 }
 
+export function copy(args) {
+  if (args.obj) {
+    const i = Manager.state.mapObjects.indexOf(args.obj);
+    const newObj = { ...Manager.state.mapObjects[i] };
+    const mapObjects = [
+      ...Manager.state.mapObjects,
+      newObj
+    ]
+    Manager.state.qMap[Manager.state.selectedMap] = mapObjects;
+    const selectedObj = newObj;
+    Manager.autosave();
+    Manager.update({
+      mapObjects,
+      selectedObj
+    })
+    Manager.emit('ADD_OBJECT', newObj);
+    Manager.emit('SELECT_OBJECT', newObj);
+  }
+}
+
 export function update(args) {
   let needsSort = false;
   if (args.props.y || args.props.y === 0) {

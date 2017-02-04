@@ -53,6 +53,15 @@ export function deleteAllObjects() {
   }
 }
 
+export function copyObject(obj) {
+  return {
+    type: 'COPY_OBJECT',
+    args: {
+      obj
+    }
+  }
+}
+
 export function selectObject(obj) {
   return {
     type: 'SELECT_OBJECT',
