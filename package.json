@@ -20,6 +20,7 @@
     "electron-builder": "^8.5.3"
   },
   "scripts": {
+    "start": "electron . --dev",
     "compile-babel": "babel app -d compiled --copy-files -i node_modules,style.less",
     "compile": "npm run compile-babel",
     "build-64": "npm run compile && build -w --x64",
