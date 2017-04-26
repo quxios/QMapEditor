@@ -1,13 +1,14 @@
-import * as fs from 'fs'
+import Store from '../manager/store'
 import Manager from './../manager'
-import Input from './../manager/input'
+import { observe } from 'mobx'
 
-import { selectObject, updateObject, sortObjects } from './../manager/actions'
+import fs from 'fs'
+import path from 'path'
 
-const _dataOutline = 0xFFFFFF;
-const _dataFill = 0x29B6F6;
-const _dataFillAnchor = 0xF44336;
-const _dataFillCollider = 0xAA0000;
+const DATA_OUTLINE = 0xFFFFFF;
+const DATA_FILL = 0x29B6F6;
+const DATA_FILL_ANCHOR = 0xF44336;
+const DATA_FILL_COLLIDER = 0xAA0000;
 
 function toObj(string) {
   if (typeof string !== 'string') return {};
@@ -47,22 +48,35 @@ function toAry(string) {
 export default class Sprite extends PIXI.Sprite {
   constructor(obj) {
     super();
+    this.x = obj.x;
+    this.y = obj.y;
+    this.anchor.x = obj.anchorX;
+    this.anchor.y = obj.anchorY;
+    this._tick = 0;
+    this._tick2 = 0;
+    this._frameI = 0;
+    this._frames = [];
+    this._realTexture = null;
     this._obj = obj;
     this._isSelected = false;
+    this._qSprite = null;
+    if (obj.isQSprite) {
+      const config = Manager.getQSprite(obj.isQSprite);
+      this._qSprite = {
+        config,
+        pose: config.poses[obj.pose]
+      }
+      this.anchor.x = this._qSprite.config.anchorX;
+      this.anchor.y = this._qSprite.config.anchorY;
+    }
     this._dataGraphic = new PIXI.Graphics();
     this._dataGraphic.alpha = 0;
     this.addChild(this._dataGraphic);
+    this.makeMeta();
+    this.loadImage(obj.filePath);
     this.addListeners();
-    this.updateState(Manager.state);
-    this.updateObject(this._obj);
   }
   addListeners() {
-    this.updateState = ::this.updateState;
-    this.updateObject = ::this.updateObject;
-    this.updateSelect = ::this.updateSelect;
-    Manager.on('UPDATE_STATE', this.updateState);
-    Manager.on('UPDATE_OBJECT', this.updateObject);
-    Manager.on('SELECT_OBJECT', this.updateSelect);
     this.buttonMode = true;
     this.interactive = true;
     this.on('mousedown', ::this.startDrag);
@@ -71,18 +85,19 @@ export default class Sprite extends PIXI.Sprite {
     this.on('mousemove', ::this.onDrag);
     this.on('mouseover', ::this.onOver);
     this.on('mouseout', ::this.onOut);
+    this._observingA = observe(this._obj, ::this.onObjectChange);
+    this._observingB = observe(Store, 'mapObject', ::this.onMapObjectChange);
   }
   removeListeners() {
-    Manager.remove('UPDATE_STATE', this.updateState);
-    Manager.remove('UPDATE_OBJECT', this.updateObject);
-    Manager.remove('SELECT_OBJECT', this.updateSelect);
+    this._observingA();
+    this._observingB();
   }
   startDrag(event) {
     if (event.data.originalEvent.button === 0) { // Leftclick
       this._prevPos = { ...event.data.global };
       this._dragging = true;
       this.alpha = 0.7;
-      Manager.run(selectObject(this._obj));
+      Manager.selectMapObj(Store.mapObjects.indexOf(this._obj));
     }
   }
   endDrag(event) {
@@ -90,10 +105,6 @@ export default class Sprite extends PIXI.Sprite {
       this._data = null;
       this._dragging = false;
       this.alpha = 1;
-      Manager.run(updateObject(this._obj, {
-        x: this.x,
-        y: this.y
-      }));
     }
   }
   onDrag(event) {
@@ -101,64 +112,60 @@ export default class Sprite extends PIXI.Sprite {
       const newPos = event.data.global;
       const dx = newPos.x - this._prevPos.x;
       const dy = newPos.y - this._prevPos.y;
-      var x = this.x + dx / this.parent.parent.scale.x;
-      var y = this.y + dy / this.parent.parent.scale.y;
-      this.x = this.adjustXWithSnap(this.x, x);
-      this.y = this.adjustYWithSnap(this.y, y);
+      const x = this._obj.x + dx / this.parent.parent.scale.x;
+      const y = this._obj.y + dy / this.parent.parent.scale.y;
+      this._obj.x = Math.round(this.adjustXWithSnap(this._obj.x, x));
+      this._obj.y = Math.round(this.adjustYWithSnap(this._obj.y, y));
       this._prevPos = { ...event.data.global };
-      Manager.run(updateObject(this._obj, {
-        x: Math.round(this.x),
-        y: Math.round(this.y)
-      }, true));
     }
   }
   adjustXWithSnap(prevX, nextX) {
-    if (Input.isPressed(0x12)) return nextX;
-    prevX += this.width * -this.anchor.x;
-    nextX += this.width * -this.anchor.x;
+    // disabled for now
+    return nextX;
+    if (Manager.isPressed(0x12)) return nextX;
     let dx = nextX - prevX;
-    let gridPos = nextX / this._gridWidth;
+    let gridPos = nextX / Store.gridWidth;
     let snapTo;
     if (dx > 0) {
-      snapTo = Math.ceil(gridPos + 0.005) * this._gridWidth;
-      if (snapTo - nextX < 10) {
+      snapTo = Math.ceil(gridPos + 0.005) * Store.gridWidth;
+      if (snapTo - nextX < 2) {
         nextX = snapTo;
-      } else if (snapTo - nextX > this._gridWidth - 2) {
-        nextX = snapTo - this._gridWidth;
+      } else if (snapTo - nextX > Store.gridWidth - 2) {
+        nextX = snapTo - Store.gridWidth;
       }
     } else if (dx < 0) {
-      snapTo = Math.floor(gridPos - 0.005) * this._gridWidth;
-      if (nextX - snapTo < 10) {
+      snapTo = Math.floor(gridPos - 0.005) * Store.gridWidth;
+      if (nextX - snapTo < 2) {
         nextX = snapTo;
-      } else if (nextX - snapTo > this._gridWidth - 2) {
-        nextX = snapTo + this._gridWidth;
+      } else if (nextX - snapTo > Store.gridWidth - 2) {
+        nextX = snapTo + Store.gridWidth;
       }
     }
-    return nextX += this.width * this.anchor.x;
+    return nextX;
   }
   adjustYWithSnap(prevY, nextY) {
-    if (Input.isPressed(0x12)) return nextY;
-    prevY += this.height * -this.anchor.y;
-    nextY += this.height * -this.anchor.y;
+    // disabled for now
+    return nextY;
+    if (Manager.isPressed(0x12)) return nextY;
     let dy = nextY - prevY;
-    let gridPos = nextY / this._gridHeight;
+    let gridPos = nextY / Store.gridHeight;
     let snapTo;
     if (dy > 0) {
-      snapTo = Math.ceil(gridPos + 0.005) * this._gridHeight;
+      snapTo = Math.ceil(gridPos + 0.005) * Store.gridHeight;
       if (snapTo - nextY < 10) {
         nextY = snapTo;
-      } else if (snapTo - nextY > this._gridHeight - 2) {
-        nextY = snapTo - this._gridHeight;
+      } else if (snapTo - nextY > Store.gridHeight - 2) {
+        nextY = snapTo - Store.gridHeight;
       }
     } else if (dy < 0) {
-      snapTo = Math.floor(gridPos - 0.005) * this._gridHeight;
+      snapTo = Math.floor(gridPos - 0.005) * Store.gridHeight;
       if (nextY - snapTo < 10) {
         nextY = snapTo;
-      } else if (nextY - snapTo > this._gridHeight - 2) {
-        nextY = snapTo + this._gridHeight;
+      } else if (nextY - snapTo > Store.gridHeight - 2) {
+        nextY = snapTo + Store.gridHeight;
       }
     }
-    return nextY += this.height * this.anchor.y;
+    return nextY;
   }
   onOver(event) {
     if (!this._isSelected) {
@@ -170,17 +177,86 @@ export default class Sprite extends PIXI.Sprite {
       this._dataGraphic.alpha = 0;
     }
   }
+  onObjectChange(change) {
+    const {
+      name,
+      newValue,
+      object
+    } = change;
+    if (name === 'x' || name === 'y') {
+      this.x = object.x;
+      this.y = object.y;
+    }
+    if (name === 'z' || name === 'y') {
+      this.parent.parent.sortObjects();
+    }
+    if (name === 'filePath') {
+      this.loadImage(newValue);
+    }
+    if (name === 'anchorX' || name === 'anchorY') {
+      this.anchor.x = object.anchorX;
+      this.anchor.y = object.anchorY;
+      this.drawData();
+    }
+    if (name === 'cols' || name === 'rows' || name === 'index') {
+      this.setSprite(this._realTexture);
+      this.drawData();
+    }
+    if (name === 'notes') {
+      if (!this.cooldown) {
+        this.makeMeta();
+        this.applyMeta();
+        this.drawData();
+        this.cooldown = true;
+        window.setTimeout(() => {
+          this.cooldown = null;
+        }, 1000);
+      } else if (!this.requested) {
+        this.requested = window.setTimeout(() => {
+          this.makeMeta();
+          this.applyMeta();
+          this.drawData();
+          this.requested = null;
+        }, 1000);
+      }
+    }
+    if (name === 'isQSprite') {
+      if (newValue) {
+        this._qSprite = {
+          config: Manager.getQSprite(newValue),
+          pose: null
+        }
+        this.anchor.x = this._qSprite.config.anchorX;
+        this.anchor.y = this._qSprite.config.anchorY;
+      } else {
+        this._qSprite = null;
+      }
+      this.setSprite(this._realTexture);
+      this.drawData();
+    }
+    if (name === 'pose' && this._qSprite) {
+      this._qSprite.pose = this._qSprite.config.poses[newValue];
+    }
+  }
+  onMapObjectChange(change) {
+    this._isSelected = change.newValue === this._obj;
+    this._dataGraphic.alpha = this._isSelected ? 0.8 : 0;
+  }
   drawData() {
+    const {
+      cols, rows,
+      anchorX, anchorY
+    } = this._qSprite ? this._qSprite.config : this._obj;
     this.updateFrame();
     this._dataGraphic.clear();
     let width  = this.texture.baseTexture.width;
     let height = this.texture.baseTexture.height;
-    width  = Math.floor(width / this.cols);
-    height = Math.floor(height / this.rows);
-    const ox = this.anchor.x * width;
-    const oy = this.anchor.y * height;
+    width  = Math.floor(width / cols);
+    height = Math.floor(height / rows);
+    const ox = anchorX * width;
+    const oy = anchorY * height;
     // edges
-    this._dataGraphic.lineStyle(2, _dataFill, 1);
+    this._dataGraphic.lineStyle(2, DATA_FILL, 1);
     this._dataGraphic.moveTo(-ox, -oy);
     this._dataGraphic.lineTo(-ox, height - oy);
     this._dataGraphic.lineTo(width - ox, height - oy);
@@ -188,14 +264,14 @@ export default class Sprite extends PIXI.Sprite {
     this._dataGraphic.lineTo(-ox, -oy);
     this._dataGraphic.lineStyle(0);
     // vertices
-    this._dataGraphic.lineStyle(2, _dataOutline, 1);
-    this._dataGraphic.beginFill(_dataFill, 1);
+    this._dataGraphic.lineStyle(2, DATA_OUTLINE, 1);
+    this._dataGraphic.beginFill(DATA_FILL, 1);
     this._dataGraphic.drawCircle(-ox, -oy, 4);
     this._dataGraphic.drawCircle(-ox, height - oy, 4);
     this._dataGraphic.drawCircle(width - ox, height - oy, 4);
     this._dataGraphic.drawCircle(width - ox, -oy, 4);
     // anchor
-    this._dataGraphic.beginFill(_dataFillAnchor, 1);
+    this._dataGraphic.beginFill(DATA_FILL_ANCHOR, 1);
     this._dataGraphic.drawCircle(0, 0, 4);
     this._dataGraphic.endFill();
     this._dataGraphic.lineStyle(0);
@@ -216,55 +292,14 @@ export default class Sprite extends PIXI.Sprite {
     let ox = collider[3] || 0;
     let oy = collider[4] || 0;
     if (w === 0 || h === 0) return;
-    ox += this._frameW * -this.anchor.x;
-    oy += this._frameH * -this.anchor.y;
-    this._dataGraphic.beginFill(_dataFillCollider, 0.5);
+    ox += this._frameW * -this._obj.anchorX;
+    oy += this._frameH * -this._obj.anchorY;
+    this._dataGraphic.beginFill(DATA_FILL_COLLIDER, 0.5);
     this._dataGraphic.drawRect(ox, oy, w, h);
     this._dataGraphic.endFill();
   }
-  updateState(newState) {
-    const {
-      projectPath,
-      gridWidth,
-      gridHeight
-    } = newState;
-    this._projectPath = projectPath;
-    this._gridWidth = gridWidth;
-    this._gridHeight = gridHeight;
-  }
-  updateSelect(obj) {
-    this._isSelected = this._obj === obj;
-    this._dataGraphic.alpha = this._isSelected ? 1 : 0;
-    Manager.run(sortObjects());
-  }
-  updateObject(obj) {
-    if (this._obj !== obj) return;
-    const newObjData = obj;
-    const oldY = this.y;
-    this.x = newObjData.x;
-    this.y = newObjData.y;
-    this.z = newObjData.z;
-    this.cols  = newObjData.cols;
-    this.rows  = newObjData.rows;
-    this.index = newObjData.index;
-    let needsRedraw = true;
-    if (this.notes !== newObjData.notes) {
-      this.notes = newObjData.notes;
-      this.makeMeta();
-      needsRedraw = true;
-    }
-    if (this.filePath !== newObjData.filePath) {
-      this.loadImage(newObjData.filePath);
-      needsRedraw = false;
-    }
-    if (needsRedraw || (this.anchor.x !== newObjData.anchorX || this.anchor.y !== newObjData.anchorY)) {
-      this.anchor.x = newObjData.anchorX;
-      this.anchor.y = newObjData.anchorY;
-      this.drawData();
-    }
-  }
   makeMeta() {
-    const notes = this.notes || '';
+    const notes = this._obj.notes || '';
     const inlineRegex = /<([^<>:\/]+)(?::?)([^>]*)>/g;
     const blockRegex = /<([^<>:\/]+)>([\s\S]*?)<\/\1>/g;
     this.meta = {};
@@ -288,48 +323,128 @@ export default class Sprite extends PIXI.Sprite {
           break;
       }
     }
+    this.applyMeta();
     return this.meta;
-  };
-  updateFrame() {
-    const width  = this.texture.baseTexture.width;
-    const height = this.texture.baseTexture.height;
-    const frameW = Math.floor(width / this.cols);
-    const frameH = Math.floor(height / this.rows);
-    const index  = this.index;
-    let x = index % this.cols;
-    let y = (index - x) / this.cols;
-    x *= frameW;
-    y *= frameH;
-    if (x + frameW <= width && y + frameH <= height) {
-      if (this._frameW !== frameW || this._frameH !== frameH) {
-        this._frameW = frameW;
-        this._frameH = frameH;
-        Manager.run(updateObject(this._obj, {
-          width: frameW,
-          height: frameH
-        }));
+  }
+  applyMeta() {
+    if (this.meta.tint) {
+      const tint = this.meta.tint.split(',').map(Number);
+      if (tint.length > 1) {
+        let r = (tint[0]).toString(16) || '00';
+        let g = (tint[1]).toString(16) || '00';
+        let b = (tint[2]).toString(16) || '00';
+        if (r.length === 1) r += '0';
+        if (g.length === 1) g += '0';
+        if (b.length === 1) b += '0';
+        const gray = tint[3] || 0;
+        this.tint = parseInt(r + g + b, 16);
       }
-      this.texture.frame = new PIXI.Rectangle(x, y, frameW, frameH);
     }
   }
   loadImage(filePath) {
-    this.filePath = filePath;
-    if (filePath === '') return;
-    filePath = this._projectPath + '\\' + filePath;
-    fs.stat(filePath, (err, stats) => {
-      if (!err && stats.isFile()) {
-        filePath = filePath.replace('#', '%23');
-        let loader = new PIXI.loaders.Loader()
-          .add('sprite', filePath)
-          .load((loader, resources) => {
-            this.texture = new PIXI.Texture(resources.sprite.texture.baseTexture);
-            this.drawData();
-          })
-        loader = null;
-      } else {
-        console.log('Error:', err);
+    if (filePath) {
+      filePath = path.join(Store.projectPath, filePath);
+      const fileName = encodeURIComponent(path.basename(filePath));
+      filePath = path.join(path.dirname(filePath), fileName);
+      const texture = PIXI.BaseTexture.fromImage(filePath);
+      texture.on('error', () => {
         this.texture = PIXI.Texture.EMPTY;
+        Manager.notify('ERROR', 'Failed to load image.');
+      })
+      if (texture.hasLoaded) {
+        this.setSprite(texture);
+        this.drawData();
+        this.applyMeta();
+      } else {
+        texture.on('loaded', () => {
+          this.setSprite(texture);
+          this.drawData();
+          this.applyMeta();
+        })
       }
-    })
+    } else {
+      this.texture = PIXI.Texture.EMPTY;
+    }
+  }
+  setSprite(texture) {
+    this._frames = [];
+    this._realTexture = texture;
+    this._obj.width = 0;
+    this._obj.height = 0;
+    if (!texture) return;
+    const {
+      cols, rows
+    } = this._qSprite ? this._qSprite.config : this._obj;
+    const frameW = texture.width / cols;
+    const frameH = texture.height / rows;
+    for (let y = 0; y < rows; y++) {
+      const y1 = y * frameH;
+      for (let x = 0; x < cols; x++) {
+        const x1 = x * frameW;
+        const frame = new PIXI.Rectangle(x1, y1, frameW, frameH);
+        this._frames.push(new PIXI.Texture(texture, frame));
+      }
+    }
+    this._obj.width = frameW;
+    this._obj.height = frameH;
+  }
+  update() {
+    if (this.alpha === 0) return;
+    if (this.meta) this.updateMeta();
+    if (this._obj.type === 'animated' || this._qSprite) {
+      this.updateAnimation();
+    }
+  }
+  updateMeta() {
+    if (this.meta.breath) {
+      this.updateBreath();
+    }
+  }
+  updateBreath() {
+    const args = this.meta.breath.split(',').map(Number);
+    if (args.length < 2) return;
+    if (isNaN(args[0]) || isNaN(args[1])) return;
+    const ot = args[2] || 0;
+    const rt = ((this._tick2 + ot) % args[1]) / args[1];
+    const s = Math.sin(rt * Math.PI * 2) * (args[0] / 100);
+    this.scale = new PIXI.Point(1 + s, 1 + s);
+    this._tick2 = (this._tick2 + 1) % args[1];
+  }
+  updateAnimation() {
+    let { speed } = this._obj;
+    if (this._qSprite && this._qSprite.pose) {
+      speed = this._qSprite.pose.speed;
+    }
+    if (isNaN(this._obj.speed)) return;
+    if (this._tick % this._obj.speed === 0) {
+      this.updateFrame();
+    }
+    this._tick = (this._tick + 1) % this._obj.speed;
+  }
+  updateFrame() {
+    if (!this._realTexture || this._frames.length === 0) {
+      this.texture = PIXI.Texture.EMPTY;
+      return;
+    }
+    if (this._obj.type === 'animated') {
+      const frame = this._frames[this._frameI];
+      if (frame) {
+        this.texture = frame;
+      }
+      this._frameI = (this._frameI + 1) % this._frames.length;
+    } else if (this._qSprite && this._qSprite.pose) {
+      const { pattern } = this._qSprite.pose;
+      const index = pattern[this._frameI];
+      const frame = this._frames[index];
+      if (frame) {
+        this.texture = frame;
+      }
+      this._frameI = (this._frameI + 1) % pattern.length;
+    } else {
+      const frame = this._frames[this._obj.index];
+      if (frame) {
+        this.texture = frame;
+      }
+    }
   }
 }

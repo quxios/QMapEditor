@@ -4,30 +4,41 @@
 		<title>Help</title>
 		<link rel="stylesheet" href="css/style.css">
     <style>
-      body {
-        background-color: #ffffff;
-        padding: 5px;
-      }
+			body {
+				background-color: #ffffff;
+				overflow: auto;
+				-webkit-user-select: text;
+			}
+			#help {
+				padding: 5px;
+				width: calc(100% - 30px);
+			}
+			#version {
+				padding: 5px;
+			}
     </style>
 	</head>
-  <body oncontextmenu="return false;">
-		<div>
-      <h1>Z-Layers</h1>
-      <ul>
-        <li>0 : Lower tiles</li>
-        <li>1 : Lower characters</li>
-        <li>3 : Normal characters</li>
-        <li>4 : Upper tiles</li>
-        <li>5 : Upper characters</li>
-        <li>6 : Airship shadow</li>
-        <li>7 : Balloon</li>
-        <li>8 : Animation</li>
-        <li>9 : Destination</li>
-      </ul>
-    </div>
-    <div>
-      <h1>Input</h1>
-      Hold Left Alt to ignore grid snapping.
-    </div>
+  <body>
+		<h1 id="version"></h1>
+		<div id="help"></div>
+		<script>
+			var marked = require('marked');
+			var fs = require('fs');
+			var path = require('path');
+			var json = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+			document.getElementById('version').innerHTML = `Current Version: ${json.version}`;
+			var content = fs.readFileSync(path.join(__dirname, 'HELP.md'), 'utf8');
+			marked(content, function(err, content) {
+				document.getElementById('help').innerHTML = content;
+				var links = document.getElementsByTagName('a');
+				var shell = require('electron').shell;
+				for (var i = 0; i < links.length; i++) {
+					links[i].onclick = function(event) {
+						event.preventDefault();
+						shell.openExternal(event.target.href);
+					}
+				}
+			});
+		</script>
 	</body>
 </html>

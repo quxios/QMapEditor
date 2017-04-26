@@ -1,34 +1,34 @@
-// out: style.css
+// out: style.css, compress: true
 
 @import "Roboto/roboto.css";
+@import "font-awesome/css/font-awesome.min.css";
+@import (less, reference) "font-awesome/css/font-awesome.min.css";
 
 @dark: #1F1F1F;
-@dark2: #1F1F1F;
-
+@dark-text: #1F1F1F;
 @light: #FFFFFF;
-@light2: #FAFAFA;
+@light-secondary: #FAFAFA;
+@light-text: #9E9E9E;
 @light-border: #E0E0E0;
 @light-highlight: #03A9F4;
 @light-disabled: #F44336;
 
-@highlight-color: #03A9F4;
-@highlight-text: #FAFAFA;
-@selected-color: #29B6F6;
-@selected-text: #FAFAFA;
-
-@accepted: #00AA00;
-@error: #AA0000;
-
+html {
+	width: 100%;
+	height: 100%;
+}
 body {
+	width: 100%;
+	height: 100%;
 	font-family: 'Roboto', sans-serif;
 	font-size: 14px;
-	color: @dark;
+	color: @dark-text;
+	background-color: @dark;
 	padding: 0;
 	margin: 0;
 	-webkit-user-select: none;
 	cursor: default;
 	overflow: hidden;
-	background-color: @dark2;
 }
 ::-webkit-scrollbar {
   width: 12px;
@@ -39,61 +39,38 @@ body {
   background: @light-highlight;
 }
 .menubar {
+	z-index: 2;
 	background-color: @light;
-	border-bottom: 1px solid @light-border;
-	height: 33px;
-	line-height: 33px;
+	border-bottom: 2px solid @light-border;
+	height: 32px;
+	line-height: 32px;
+	i {
+		padding-right: 5px;
+	}
 }
 .toolbar {
-	position: absolute;
+	z-index: 1;
 	background-color: @light;
-	width: 249px;
+	border-right: 2px solid @light-border;
+	width: 175px;
+	height: ~"calc(100% - 34px)";
+	box-sizing: border-box;
+	padding: 5px;
+	position: absolute;
+	transition: left 200ms;
 	&.map {
-		border-right: 1px solid @light-border;
+		z-index: 2;
+		ul {
+			height: ~"calc(100% - 30px)";
+		}
 	}
-	&.obj {
-		right: 0;
-		border-left: 1px solid @light-border;
-	}
-	.block {
-		padding: 3px 0;
-		.header {
-			font-size: 1.3em;
-			padding: 5px 5px 0;
-			margin: 0;
-			height: 30px;
-		}
-		.footer {
-			height: 30px;
-			line-height: 30px;
-		}
-		.listContainer {
-			overflow: auto;
-			position: relative;
-			.list {
-				display: inline-block;
-				min-width: 100%;
-				.item {
-					box-sizing: border-box;
-					white-space: nowrap;
-					height: 20px;
-					min-width: 100%;
-					line-height: 20px;
-					cursor: pointer;
-					&:hover {
-						background-color: @highlight-color !important;
-						color: @highlight-text !important;
-					}
-					&.selected {
-						transition: all 200ms linear;
-						background-color: @selected-color;
-						color: @selected-text;
-					}
-				}
-			}
-		}
+	&.properties {
+		border-left: 2px solid @light-border;
+		border-right: none;
+		transition: right 200ms;
+		width: 225px;
 		.propsContainer {
-			overflow: auto;
+			overflow: hidden;
 			position: relative;
 			.props {
 				display: flex;
@@ -114,13 +91,29 @@ body {
 					width: 33%;
 					padding: 5px;
 				}
-				input, textarea {
-					box-sizing: border-box;
+				input[type=text], textarea {
 					width: 100%;
+					border: 1px solid @light-border;
+					border-radius: 3px;
+					padding: 3px;
+					box-sizing: border-box;
+					color: @light-text;
+					transition: all 200ms linear;
+					&:hover {
+						border-color: @light-highlight;
+						color: @dark-text;
+					}
+					&:focus {
+						color: @dark-text;
+						border-color: @light-highlight;
+						outline: none;
+						box-shadow: inset 0 0 2px @light-highlight;
+					}
 				}
 				textarea {
 					white-space: nowrap;
 					height: 125px;
+					resize: vertical;
 				}
 				button {
 					margin: 0;
@@ -128,45 +121,67 @@ body {
 			}
 		}
 	}
-	.divider {
-		height: 5px;
-		background-color: @light-border;
-		cursor: row-resize;
+	.header {
+		font-weight: bold;
+		height: 30px;
+		line-height: 30px;
 	}
-}
-input[type=text], textarea {
-	border: 1px solid @light-border;
-	border-radius: 3px;
-	padding: 3px;
-	color: @dark;
-	transition: all 200ms linear;
-	&:hover {
-		border-color: @light-highlight;
-		color: @dark;
+	.footer {
+		height: 50px;
+		line-height: 50px;
 	}
-	&:focus {
-		color: @dark;
-		border-color: @light-highlight;
-		outline: none;
-		box-shadow: inset 0 0 2px @light-highlight;
-	}
-	&.error {
-		border-color: @light-disabled;
-		color: @light-disabled;
-		&:focus {
-			box-shadow: inset 0 0 2px @light-disabled;
+	ul {
+		height: ~"calc(100% - 30px - 50px + 10px)";
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+		overflow-y: auto;
+		overflow-x: hidden;
+		li {
+			padding: 3px 10px;
+			overflow: hidden;
+			a {
+				display: block;
+				width: 100%;
+			}
+			&:hover {
+				cursor: pointer;
+				background-color: @light-highlight !important;
+			}
+			&.selected {
+				background-color: @light-border;
+				.handle {
+					&:extend(.fa, .fa-square all);
+					padding-right: 5px;
+				}
+			}
+			&.contextSelected {
+				background-color: lighten(@light-highlight, 20%);
+			}
+			.handle {
+				&:extend(.fa, .fa-square-o all);
+				padding-right: 5px;
+				float: left;
+			}
 		}
 	}
 }
-canvas {
-	background-color: @dark2;
+.sortHelperList {
+	z-index: 2;
+	padding: 5px 15px;
+	list-style-type: none;
+	background-color: lighten(@light-highlight, 20%);
+	.handle {
+		&:extend(.fa, .fa-square all);
+		padding-right: 5px;
+	}
 }
 .contextMenu {
 	position: absolute;
 	background-color: @light;
 	border: 1px solid @light-border;
 	padding: 5px 0;
-	z-index: 2;
+	z-index: 11;
 	.item {
 		padding: 2px 5px;
 		cursor: pointer;
@@ -179,44 +194,75 @@ canvas {
 	position: absolute;
 	top: 0;
 	left: 0;
-	z-index: 1;
-}
-.hidden {
-	display: none;
+	z-index: 10;
+	width: 100%;
+	height: 100%;
 }
 button {
+	cursor: pointer;
 	height: 24px;
 	min-width: 60px;
 	margin: 0 5px;
 	outline: none;
-	background-color: @light;//inherit;
-	border: 1px solid @light-border;
+	background-color: inherit;
+	border: 2px solid @light-border;
 	border-radius: 3px;
 	transition: all 150ms linear;
-	cursor: pointer;
 	&:hover {
 		border-color: @light-highlight;
 		color: @light-highlight;
 	}
-	&.accepted {
-		border-color: @accepted;
-		color: @accepted;
+	&.disabled {
+		cursor: not-allowed;
+		&:hover {
+			border-color: @light-disabled;
+			color: @light-disabled;
+		}
 	}
-	&.error {
-		border-color: @error;
-		color: @error;
-	}
-}
-button.disabled {
-	cursor: not-allowed;
-	&:hover {
-		border-color: @light-disabled;
-		color: @light-disabled;
+	i {
+		padding-right: 5px;
 	}
 }
-canvas {
+.pixi {
+	outline: none;
+	z-index: 0;
+	background-color: @dark;
 	position: absolute;
 	top: 34px;
+}
+.notifications {
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	z-index: 10;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	li {
+		background-color: @light;
+		pointer-events: all;
+		border-radius: 3px;
+		padding: 5px;
+		margin: 5px;
+		cursor: pointer;
+		white-space: pre-line;
+		width: auto;
+		max-width: ~"calc(100% - 10px)";
+		float: right;
+		clear: right;
+	}
+	.error {
+		background-color: @light-disabled;
+		&:hover {
+			background-color: lighten(@light-disabled, 20%);
+		}
+	}
+	.success {
+		background-color: @light-highlight;
+		&:hover {
+			background-color: lighten(@light-highlight, 20%);
+		}
+	}
 }
 .left {
 	float: left;
@@ -226,6 +272,22 @@ canvas {
 }
 .frameSelect {
 	overflow: auto;
+	.index {
+		box-sizing: border-box;
+		border: 2px solid @light-border;
+		position: absolute;
+		z-index: 1;
+		transition: all 150ms;
+		cursor: pointer;
+		&.selected {
+			border: 2px solid lighten(@light-highlight, 20%);
+			z-index: 2;
+		}
+		&:hover {
+			border: 2px solid @light-highlight;
+			z-index: 2;
+		}
+	}
 }
 .fixedRight {
 	position: fixed;

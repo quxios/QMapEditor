@@ -13,18 +13,11 @@
  `npm start`
 
  ( That's assuming you're in the package.json directory, if not cd to that directory )
- 
 
-**From download**
 
-Download one of these prebuilts:
+**From prebuild**
 
-* Windows - [32bit](http://bit.ly/2j6ZfYn),
-[64bit](http://bit.ly/2kv3nO4)
-
-( If not sure which to get, get the 32bit )
-
-Run the QMapEditor shortcut or .exe inside the app folder
+Download a [prebuilt](/#Prebuilt) then run the QMapEditor shortcut or .exe in the app folder
 
 ## Building
 Two Scripts are included to build:
@@ -37,6 +30,9 @@ To use, run the cli
 
 ( That's assuming you're in the package.json directory, if not cd to that directory )
 
+## Prebuilt
+* Windows - [32bit](https://mega.nz/#!chkCzBwS!8ZFeVkq9Z4By6dMMLyRoGxk5JvOg1vC4-phuaZcG7b0),
+[64bit](https://mega.nz/#!xh8AGZab!dZfpM02RQeByA6Y27wWujrEpyokEcRBz_vkWGdNMT4Q)
 
 ## Instructions
--todo
+Can be found by click on the help button in the editor or [here](/app/HELP.md)

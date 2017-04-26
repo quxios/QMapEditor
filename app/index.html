@@ -8,11 +8,9 @@
 		<div id="app"></div>
 		<script>
 			if (process.env.PRODUCTION === 'false') {
-				require('babel-register')
+				require('babel-register');
 			}
-			require("babel-polyfill")
-			require('pixi.js').utils.skipHello()
-			require('./js/app')
+			require('./js/app');
 		</script>
 	</body>
 </html>

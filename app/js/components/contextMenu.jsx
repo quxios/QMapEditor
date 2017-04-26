@@ -1,65 +1,52 @@
 import React from 'react'
-import Manager from './../manager'
-import { ipcRenderer } from 'electron'
-import { closeContext } from './../manager/actions'
+import Manager from '../manager'
+import { observer } from 'mobx-react'
 
+@observer
 export default class ContextMenu extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      items: [],
-      top: 0,
-      left: 0,
-      visible: false,
-      winWidth: ipcRenderer.sendSync('getContentSize')[0],
-      winHeight: ipcRenderer.sendSync('getContentSize')[1]
-    }
-    this.setContext = ::this.setContext;
-    this.closeContext = ::this.closeContext;
-    this.onResize = ::this.onResize;
-  }
-  componentWillMount() {
-    Manager.on('SET_CONTEXT', this.setContext)
-    Manager.on('CLOSE_CONTEXT', this.closeContext)
-    ipcRenderer.on('resize', this.onResize)
-  }
-  onResize(event, winWidth, winHeight) {
-    this.setState({ winWidth, winHeight })
-  }
-  setContext(items, top, left) {
-    this.setState({ items, top, left, visible: true })
-  }
-  closeContext() {
-    this.setState({ visible: false })
-  }
-  onVeilClick() {
-    Manager.run(closeContext())
+  onVeilClick = (e) => {
+    Manager.clearContext();
+    // TODO pass event through events behind veil
+    //e.target.style.display = 'none';
+    //const elem = document.elementFromPoint(e.clientX, e.clientY);
+    //elem.click();
   }
   render() {
+    const {
+      open,
+      x, y,
+      items
+    } = this.props.context;
     const style = {
-      top: this.state.top,
-      left: this.state.left,
-      display: this.state.visible ? 'block' : 'none'
+      top: y,
+      left: x,
+      display: open ? 'block' : 'none'
     }
     const veilStyle = {
-      width: this.state.winWidth,
-      height: this.state.winHeight,
-      display: this.state.visible ? 'block' : 'none'
+      display: open ? 'block' : 'none'
     }
-    const items = this.state.items.map((item, i) => {
-      let title = item.title;
-      let handler = item.handler;
-      return <div key={i} onClick={handler} className='item'>{title}</div>;
+    const list = items.map((item, i) => {
+      const title = item.title;
+      const handler = () => {
+        item.handler();
+        Manager.clearContext();
+      }
+      return (
+        <div key={`context-${i}`} onClick={handler} className="item">
+          {title}
+        </div>
+      )
     })
     return (
       <div>
         <div
-          className='veil'
+          className="veil"
           style={veilStyle}
-          onClick={::this.onVeilClick}>
-        </div>
-        <div className='contextMenu' style={style}>
-          {items}
+          onClick={this.onVeilClick}
+          onContextMenu={this.onVeilClick}
+        />
+        <div className="contextMenu" style={style}>
+          { list }
         </div>
       </div>
     )

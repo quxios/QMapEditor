@@ -1,55 +1,24 @@
-import * as fs from 'fs'
-import * as path from 'path'
-
 import React from 'react'
-import Manager from './../manager'
+import Manager from '../manager'
+import Stage from '../display/stage'
 
-import { loadFile, saveFile, selectMap } from './../manager/actions'
-import { remote, ipcRenderer } from 'electron'
-const dialog = remote.dialog
-
-const defaultPath = ipcRenderer.sendSync('getDefaultPath');
+import { ipcRenderer, remote } from 'electron'
+import fs from 'fs'
+import path from 'path'
 
 export default class Menubar extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      projectPath: Manager.state.projectPath,
-      selectedMap: Manager.state.selectedMap,
-      highlightSave: false,
-      highlightScreenshot: false
-    }
-    this.getStates = ::this.getStates;
-    this.onFocus = ::this.onFocus;
-  }
   componentWillMount() {
-    Manager.on('UPDATE_STATE', this.getStates);
     ipcRenderer.on('focus', this.onFocus);
   }
-  getStates(newStates) {
-    const { projectPath, selectedMap, validProject } = newStates;
-    this.setState({ projectPath, selectedMap });
-    if (validProject) {
-      const mapInfos = path.join(projectPath, 'data/MapInfos.json')
-      const project = path.join(projectPath, 'Game.rpgproject')
-      this.startWatch(mapInfos, project);
-    } else if (this._watching) {
-      fs.unwatchFile(this._watching[0])
-    }
-  }
-  onLoad() {
-    dialog.showOpenDialog({
+  openLoad = () => {
+    remote.dialog.showOpenDialog({
       title: 'Open Project',
-      defaultPath: this.state.projectPath || defaultPath,
-      filters: [
-        { name: 'RPG Maker MV Project', extensions: ['rpgproject'] }
-      ]
-    }, ::this.doLoad)
-  }
-  doLoad(filePaths) {
-    if (filePaths) {
-      Manager.run(loadFile(filePaths[0]));
-    }
+      defaultPath: this.props.projectPath,
+      filters: [{
+        name: 'RPG Maker MV Project',
+        extensions: ['rpgproject']
+      }]
+    }, ::Manager.load);
   }
   startWatch(file, projectFile) {
     fs.stat(file, (err, stats) => {
@@ -57,72 +26,63 @@ export default class Menubar extends React.Component {
         if (this._watching) {
           fs.unwatchFile(this._watching[0])
         }
+        this._watching = [file, projectFile, JSON.stringify(stats.mtime)];
         fs.watchFile(file, (current, prev) => {
           this._watching[2] = JSON.stringify(fs.statSync(file).mtime);
-          var selected = this.state.selectedMap;
-          Manager.run(loadFile(this._watching[1]));
-          Manager.run(selectMap(selected));
+          Manager.load([this._watching[1]]);
+          Manager.selectMap(this.props.currentMap);
         })
-        this._watching = [file, projectFile, JSON.stringify(stats.mtime)];
       }
     });
   }
-  onSave() {
-    Manager.run(saveFile());
-    // should probably have this set on a callback from the save function
-    // so it doesnt highlight if an error
-    this.setState({ highlightSave: true }, () => {
-      window.setTimeout(() => {
-        this.setState({ highlightSave: false });
-      }, 1000)
-    });
-  }
-  onScreenshot() {
-    Manager.emit('SCREENSHOT');
-    this.setState({ highlightScreenshot: true }, () => {
-      window.setTimeout(() => {
-        this.setState({ highlightScreenshot: false });
-      }, 1000)
-    });
-  }
-  onHelp() {
+  openHelp = () => {
     ipcRenderer.send('openHelp');
   }
-  onFocus() {
-    if (this.props.validProject && this._watching) {
-      let mtime = JSON.stringify(fs.statSync(this._watching[0]).mtime);
+  onFocus = () => {
+    if (this.props.isLoaded && this._watching) {
+      const mtime = JSON.stringify(fs.statSync(this._watching[0]).mtime);
       if (mtime !== this._watching[2]) {
-        var selected = this.state.selectedMap;
-        Manager.run(loadFile(this._watching[1]));
-        Manager.run(selectMap(selected));
         this._watching[2] = mtime;
+        Manager.load([this._watching[1]]);
+        Manager.selectMap(this.props.currentMap);
+      }
+    }
+  }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isLoaded !== this.props.isLoaded ||
+      nextProps.projectPath !== this.props.projectPath) {
+      if (nextProps.isLoaded) {
+        const mapInfos = path.join(nextProps.projectPath, 'data/MapInfos.json');
+        const project = path.join(nextProps.projectPath, 'Game.rpgproject');
+        this.startWatch(mapInfos, project);
+      } else if (this._watching) {
+        fs.unwatchFile(this._watching[0]);
       }
     }
   }
   render() {
-    const saveClass = this.props.validProject ? '' : 'disabled';
-    const { highlightScreenshot, highlightSave } = this.state
+    const {
+      isLoaded
+    } = this.props;
     return (
-      <div className='menubar'>
-        <div className='left'>
-          <button onClick={::this.onLoad}>
+      <div className="menubar">
+        <div className="left">
+          <button onClick={this.openLoad}>
             Load
           </button>
-          { this.state.selectedMap > 0 ?
-            <button onClick={::this.onSave} className={highlightSave ? 'accepted' : ''}>
+          { isLoaded &&
+            <button onClick={::Manager.save}>
               Save
             </button>
-            : null
           }
-          { this.state.selectedMap > 0 ?
-            <button onClick={::this.onScreenshot} className={highlightScreenshot ? 'accepted' : ''}>
+          { isLoaded &&
+            <button onClick={::Stage.screenShot}>
               Screenshot
             </button>
-            : null
           }
         </div>
-        <div className='right'>
-          <button onClick={::this.onHelp} className='help'>
+        <div className="right">
+          <button onClick={this.openHelp}>
             Help
           </button>
         </div>
