@@ -1,4 +1,4 @@
-## QMap Editor
+## QMap Editor 2.0.0
 
 ## How to run
 **With Electron**
