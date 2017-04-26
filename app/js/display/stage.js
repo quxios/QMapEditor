@@ -1,16 +1,25 @@
+import Store from '../manager/store'
 import Manager from './../manager'
+import { observe } from 'mobx'
 import Sprite from './sprite'
 
-const _tileColor = 0xFFFFFF;
-const _tileOutline = 0xE0E0E0;
+const TILE_COLOR = 0xFFFFFF;
+const TILE_OUTLINE = 0xE0E0E0;
 
-const _zoomAmt = 0.1;
-const _zoomMin = 0.1;
-const _zoomMax = 2;
+const ZOOM_AMT = 0.1;
+const ZOOM_MIN = 0.1;
+const ZOOM_MAX = 2;
 
 class Stage extends PIXI.Container {
   constructor() {
     super();
+    this.addListeners();
+    this.create();
+    this.setGrid(48, 48);
+    this.x = 400;
+    this.y = 50;
+  }
+  create() {
     this._mapBG = new PIXI.Graphics();
     this.addChild(this._mapBG);
     this._objContainer = new PIXI.Container();
@@ -20,39 +29,43 @@ class Stage extends PIXI.Container {
     this.addChild(this._mapGrid);
     this._mapEvents = new PIXI.Container();
     this.addChild(this._mapEvents);
-    this._mapData = null;
-    this._mapObjects = [];
-    this._selectedMap = 0;
-    Manager.on('UPDATE_STATE', ::this.updateState);
-    Manager.on('SELECT_MAP', ::this.updateMapSelect);
-    Manager.on('SORT', ::this.sortObjects);
-    Manager.on('ADD_OBJECT', ::this.addObject);
-    Manager.on('REMOVE_OBJECT', ::this.removeObject);
   }
-  updateState(newState) {
-    let {
-      gridWidth,
-      gridHeight
-    } = newState;
-    if (this._gridWidth !== gridWidth || this._gridHeight !== gridHeight) {
-      this.setGrid(gridWidth, gridHeight);
-      this.drawMapBG();
+  addListeners() {
+    observe(Store, 'currentMap', ::this.onCurrentMapChange);
+  }
+  onCurrentMapChange(change) {
+    PIXI.utils.clearTextureCache();
+    const id = change.newValue;
+    if (this._observing) {
+      this._observing();
+      this._observing = null;
     }
-  }
-  updateMapSelect(valid, selectedMap, mapData, mapObjects) {
-    if (valid && selectedMap > 0) {
+    if (id !== -1 && Store.mapData) {
       this.alpha = 1;
+      this.setSize(Store.mapData.width, Store.mapData.height)
+      this.setObjects(Store.mapObjects);
+      this.drawMapBG();
+      this.drawMapEvents(Store.mapData.events);
+      this._observing = observe(Store.mapObjects, ::this.onMapObjectsChange);
     } else {
       this.alpha = 0;
-      return;
     }
-    this._mapData = mapData;
-    this._selectedMap = selectedMap;
-    this._mapObjects = mapObjects;
-    this.setSize(mapData.width, mapData.height);
-    this.setObjects(mapObjects);
-    this.drawMapBG();
-    this.drawMapEvents(mapData.events);
+  }
+  onMapObjectsChange(change) {
+    const {
+      type,
+      added,
+      removed
+    } = change;
+    if (type === 'splice') {
+      added.forEach((obj) => {
+        this.addObject(obj);
+      })
+      removed.forEach((obj) => {
+        this.removeObject(obj);
+      })
+      this.sortObjects();
+    }
   }
   setSize(width, height) {
     this._mapWidth = width;
@@ -66,11 +79,11 @@ class Stage extends PIXI.Container {
     const fullMapWidth  = this._mapWidth * this._gridWidth;
     const fullMapHeight = this._mapHeight * this._gridHeight;
     this._mapBG.clear();
-    this._mapBG.beginFill(_tileColor);
+    this._mapBG.beginFill(TILE_COLOR);
     this._mapBG.drawRect(0, 0, fullMapWidth, fullMapHeight);
     this._mapBG.endFill();
     this._mapGrid.clear();
-    this._mapGrid.lineStyle(1, _tileOutline, 1);
+    this._mapGrid.lineStyle(1, TILE_OUTLINE, 1);
     for (let x = 0; x <= this._mapWidth; x++) {
       this._mapGrid.moveTo(x * this._gridWidth, 0);
       this._mapGrid.lineTo(x * this._gridWidth, fullMapHeight);
@@ -84,17 +97,7 @@ class Stage extends PIXI.Container {
     this._mapEvents.removeChildren();
     for (let i = 0; i < events.length; i++) {
       if (events[i]) {
-        const {x, y} = events[i];
-        /*
-        const canvas  = document.createElement('canvas');
-        canvas.width  = this._gridWidth;
-        canvas.height = this._gridHeight;
-        const ctx = canvas.getContext('2d');
-        ctx.font = "30px";
-        ctx.fillStyle = "#00AAAA";
-        ctx.fillText('E', 0, 0);
-        const sprite = new PIXI.Sprite(new PIXI.Texture.fromCanvas(canvas));
-        */
+        const { x, y } = events[i];
         const style = {
           fontFamily: 'Roboto',
           fontWeight: 'bold',
@@ -111,7 +114,7 @@ class Stage extends PIXI.Container {
       }
     }
   }
-  setObjects(newMapObjects) {
+  setObjects(newMapObjects = []) {
     let i;
     for (i = 0; i < this._objContainer.children.length; i++) {
       const sprite = this._objContainer.children[i];
@@ -127,10 +130,10 @@ class Stage extends PIXI.Container {
   }
   sortObjects() {
     this._objContainer.children.sort((a, b) => {
-      if (a.z !== b.z) {
-        return a.z - b.z;
+      if (a._obj.z !== b._obj.z) {
+        return a._obj.z - b._obj.z;
       } else {
-        return a.y - b.y;
+        return a._obj.y - b._obj.y;
       }
     })
     this._hasSorted = true;
@@ -143,8 +146,8 @@ class Stage extends PIXI.Container {
     for (let i = 0; i < this._objContainer.children.length; i++) {
       const sprite = this._objContainer.children[i];
       if (sprite && sprite._obj === obj) {
-        sprite.removeListeners();
         this._objContainer.removeChild(sprite);
+        sprite.removeListeners();
         break;
       }
     }
@@ -152,14 +155,48 @@ class Stage extends PIXI.Container {
   zoomAt(x, y, deltaY) {
     let localPos = this.toLocal(new PIXI.Point(x, y));
     if (deltaY < 0) {
-      this.scale.x = Math.min(this.scale.x + _zoomAmt, _zoomMax);
-      this.scale.y = Math.min(this.scale.y + _zoomAmt, _zoomMax);
+      this.scale.x = Math.min(this.scale.x + ZOOM_AMT, ZOOM_MAX);
+      this.scale.y = Math.min(this.scale.y + ZOOM_AMT, ZOOM_MAX);
     } else {
-      this.scale.x = Math.max(this.scale.x - _zoomAmt, _zoomMin);
-      this.scale.y = Math.max(this.scale.y - _zoomAmt, _zoomMin);
+      this.scale.x = Math.max(this.scale.x - ZOOM_AMT, ZOOM_MIN);
+      this.scale.y = Math.max(this.scale.y - ZOOM_AMT, ZOOM_MIN);
     }
     this.x = -(localPos.x * this.scale.x) + x;
     this.y = -(localPos.y * this.scale.y) + y;
+  }
+  screenShot() {
+    if (!Manager.renderer) return;
+    if (Store.currentMap > 0) {
+      const width  = this._mapWidth * 48;
+      const height = this._mapHeight * 48;
+      const renderTexture = PIXI.RenderTexture.create(width, height);
+      const selected = Store.currentMapObj;
+      const oldX = this.x;
+      const oldY = this.y;
+      const oldScaleX = this.scale.x;
+      const oldScaleY = this.scale.y;
+      this.x = 0;
+      this.y = 0;
+      this.scale.x = 48 / Store.gridWidth;
+      this.scale.y = 48 / Store.gridHeight;
+      Manager.selectMapObj(-1);
+      Manager.renderer.render(this, renderTexture);
+      let image = Manager.renderer.extract.base64(renderTexture);
+      image = image.replace(/^data:image\/\w+;base64,/, '');
+      Manager.saveScreenshot(image);
+      Manager.selectMapObj(selected);
+      this.x = oldX;
+      this.y = oldY;
+      this.scale.x = oldScaleX;
+      this.scale.y = oldScaleY;
+      renderTexture.destroy(true);
+    }
+  }
+  update() {
+    const mapObjs = this._objContainer.children;
+    for (let i = 0; i < mapObjs.length; i++) {
+      mapObjs[i].update();
+    }
   }
 }
 

@@ -1,7 +1,5 @@
 import React from 'react'
 
-const _maxHeight = 200;
-
 export default class Divider extends React.Component {
   constructor(props) {
     super(props);
@@ -10,31 +8,28 @@ export default class Divider extends React.Component {
       y: 0
     }
   }
-  onDragStart(event) {
+  onDragStart = (event) => {
     this.setState({
       dragging: true,
       y: event.pageY
     })
   }
-  onDragEnd(event) {
-    this.setState({ dragging: false })
+  onDragEnd = (event) => {
+    this.setState({ dragging: false });
   }
-  onDrag(event) {
+  onDrag = (event) => {
     if (this.state.dragging) {
-      const dy = this.state.y - event.pageY;
+      let dy = this.state.y - event.pageY;
       let block1 = { ...this.props.block1 };
-      block1.height -= dy;
       let block2 = { ...this.props.block2 };
+      if (block1.height - dy < this.props.minHeight) {
+        dy = block1.height - this.props.minHeight;
+      }
+      if (block2.height + dy < this.props.minHeight) {
+        dy = block2.height - this.props.minHeight;
+      }
+      block1.height -= dy;
       block2.height += dy;
-      if (block1.height < _maxHeight) {
-        block1.height = _maxHeight;
-        block2.height = this.props.maxHeight - _maxHeight;
-      }
-      if (block2.height < _maxHeight) {
-        var dh = block2.height - _maxHeight;
-        block2.height = _maxHeight;
-        block1.height = this.props.maxHeight - _maxHeight;
-      }
       this.props.onResizeBlocks(block1, block2);
       this.setState({
         y: event.pageY
@@ -54,14 +49,14 @@ export default class Divider extends React.Component {
       <div>
         <div
           className='divider'
-          onMouseDown={::this.onDragStart}
-          onMouseUp={::this.onDragEnd}
+          onMouseDown={this.onDragStart}
+          onMouseUp={this.onDragEnd}
         />
         <div
           style={wrapper}
-          onMouseMove={::this.onDrag}
-          onMouseOut={::this.onDragEnd}
-          onMouseUp={::this.onDragEnd}
+          onMouseMove={this.onDrag}
+          onMouseOut={this.onDragEnd}
+          onMouseUp={this.onDragEnd}
         />
       </div>
     )

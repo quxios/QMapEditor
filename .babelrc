@@ -1,3 +1,4 @@
 {
-  "presets": ["electron", "react"]
+  "presets": ["electron", "react"],
+  "plugins": ["transform-decorators-legacy"]
 }
