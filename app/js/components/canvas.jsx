@@ -48,7 +48,7 @@ export default class Canvas extends React.Component {
   }
   onResize = (event, width, height) => {
     height -= MENUBAR_HEIGHT;
-    this.renderer.resize(this.width, this.height);
+    this.renderer.resize(width, height);
   }
   onClick = (event) => {
     this.canvas.focus();
