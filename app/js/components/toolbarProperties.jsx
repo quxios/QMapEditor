@@ -28,18 +28,16 @@ export default class ToolbarProperties extends React.Component {
   onChange = (e) => {
     const prop = e.target.name;
     let value = e.target.value;
-    if (prop === 'cols' || prop === 'rows') {
-      if (!/^\d*$/.test(value)) {
-        return;
+    if (prop === 'cols' || prop === 'rows' ||
+      prop === 'x' || prop === 'y' || prop === 'z') {
+      if (!/^-?[0-9]*$/.test(value)) {
+        value = String(this.props.mapObject[prop]);
       }
-      value = Number(value) || '';
     }
-    if (prop === 'anchorX' || prop === 'anchorY' ||
-      prop === 'x' || prop === 'y') {
-      if (!/^\d*(.\d*)?$/.test(value)) {
-        return;
+    if (prop === 'anchorX' || prop === 'anchorY') {
+      if (!/^-?[0-9]*(.[0-9]*)?$/.test(value)) {
+        value = String(this.props.mapObject[prop]);
       }
-      value = Number(value) || '';
     }
     this.updateProperty(prop, value);
   }
