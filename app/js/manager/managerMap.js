@@ -33,6 +33,7 @@ export default class ManagerMap {
       Store.mapData = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
     } catch (e) {
       Store.mapData = null;
+      index = -1;
     }
     Store.currentMap = index;
     Store.currentMapObj = -1;
