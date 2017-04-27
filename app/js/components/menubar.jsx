@@ -29,8 +29,9 @@ export default class Menubar extends React.Component {
         this._watching = [file, projectFile, JSON.stringify(stats.mtime)];
         fs.watchFile(file, (current, prev) => {
           this._watching[2] = JSON.stringify(fs.statSync(file).mtime);
+          const { currentMap } = this.props;
           Manager.load([this._watching[1]]);
-          Manager.selectMap(this.props.currentMap);
+          Manager.selectMap(currentMap);
         })
       }
     });
@@ -43,8 +44,9 @@ export default class Menubar extends React.Component {
       const mtime = JSON.stringify(fs.statSync(this._watching[0]).mtime);
       if (mtime !== this._watching[2]) {
         this._watching[2] = mtime;
+        const { currentMap } = this.props;
         Manager.load([this._watching[1]]);
-        Manager.selectMap(this.props.currentMap);
+        Manager.selectMap(currentMap);
       }
     }
   }
