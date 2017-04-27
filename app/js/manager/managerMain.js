@@ -37,9 +37,23 @@ export default class ManagerMain {
   save() {
     if (!Store.isLoaded) return;
     const filePath = path.join(Store.projectPath, './data/QMap.json');
-    const data = JSON.stringify(Store.qMap);
-    fs.writeFileSync(filePath, data);
+    const data = JSON.parse(JSON.stringify(Store.qMap));
+    fs.writeFileSync(filePath, this.makeSave(data));
     this.notify('SUCCESS', `Saved to:\n${filePath}`, 3000);
+  }
+  makeSave(data) {
+    data.forEach((map) => {
+      map.forEach((mapObj) => {
+        mapObj.cols = Number(mapObj.cols) || 1;
+        mapObj.rows = Number(mapObj.rows) || 1;
+        mapObj.x = Number(mapObj.x) || 0;
+        mapObj.y = Number(mapObj.y) || 0;
+        mapObj.z = Number(mapObj.z) || 0;
+        mapObj.anchorX = Number(mapObj.anchorX) || 0;
+        mapObj.anchorY = Number(mapObj.anchorY) || 0;
+      })
+    })
+    return JSON.stringify(data);
   }
   saveScreenshot(data, id = 0) {
     const imagePath = path.join(Store.projectPath, `screenshot${id}.png`);
