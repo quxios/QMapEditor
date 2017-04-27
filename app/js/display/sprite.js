@@ -287,15 +287,23 @@ export default class Sprite extends PIXI.Sprite {
     }
   }
   drawCollider(collider) {
+    let type = collider[0];
     let w = collider[1] || 0;
     let h = collider[2] || 0;
     let ox = collider[3] || 0;
     let oy = collider[4] || 0;
     if (w === 0 || h === 0) return;
-    ox += this._frameW * -this._obj.anchorX;
-    oy += this._frameH * -this._obj.anchorY;
+    const {
+      anchorX, anchorY
+    } = this._qSprite ? this._qSprite.config : this._obj;
+    ox += this._obj.width * -anchorX;
+    oy += this._obj.height * -anchorY;
     this._dataGraphic.beginFill(DATA_FILL_COLLIDER, 0.5);
-    this._dataGraphic.drawRect(ox, oy, w, h);
+    if (type === 'circle') {
+      this._dataGraphic.drawEllipse(ox + w / 2, oy + h / 2, w / 2, h / 2);
+    } else {
+      this._dataGraphic.drawRect(ox, oy, w, h);
+    }
     this._dataGraphic.endFill();
   }
   makeMeta() {
