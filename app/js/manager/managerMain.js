@@ -67,7 +67,7 @@ export default class ManagerMain {
           }
         });
       } else {
-        saveScreenshot(data, ++id);
+        this.saveScreenshot(data, ++id);
       }
     })
   }
