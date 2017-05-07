@@ -13,6 +13,7 @@ let frameSelect;
 const MIN_WIDTH = 900;
 const MIN_HEIGHT = 500;
 const DEFAULT_WINDATA = {
+  theme: 'light',
   width: 1600,
   height: 900,
   helpWidth: 350,
@@ -25,13 +26,9 @@ let winData = Object.assign(DEFAULT_WINDATA);
 function start() {
   fs.readFile(settingsPath, 'utf8', (err, data) => {
     if (!err) {
-      winData = Object.assign(DEFAULT_WINDATA, JSON.parse(data));
+      winData = Object.assign({}, DEFAULT_WINDATA, JSON.parse(data));
       winData.width = Math.max(winData.width, MIN_WIDTH);
       winData.height = Math.max(winData.height, MIN_HEIGHT);
-      winData.helpWidth  = winData.helpWidth || DEFAULT_WINDATA.helpWidth;
-      winData.helpHeight = winData.helpHeight || DEFAULT_WINDATA.helpHeight;
-      winData.frameWidth  = winData.frameWidth || DEFAULT_WINDATA.frameWidth;
-      winData.frameHeight = winData.frameHeight || DEFAULT_WINDATA.frameHeight;
     }
     createWindow();
   })
@@ -195,6 +192,14 @@ app.on('activate', () => {
 
 ipcMain.on('getContentSize', (e) => {
   e.returnValue = win.getContentSize();
+})
+
+ipcMain.on('getTheme', (e) => {
+  e.returnValue = winData.theme || 'light';
+})
+
+ipcMain.on('setTheme', (e, theme) => {
+  winData.theme = theme;
 })
 
 ipcMain.on('getDefaultPath', (e) => {
