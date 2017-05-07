@@ -1,17 +1,6 @@
-// out: style.css, compress: true
-
 @import "Roboto/roboto.css";
 @import "font-awesome/css/font-awesome.min.css";
 @import (less, reference) "font-awesome/css/font-awesome.min.css";
-
-@dark: #1F1F1F;
-@dark-text: #1F1F1F;
-@light: #FFFFFF;
-@light-secondary: #FAFAFA;
-@light-text: #9E9E9E;
-@light-border: #E0E0E0;
-@light-highlight: #03A9F4;
-@light-disabled: #F44336;
 
 html {
 	width: 100%;
@@ -22,8 +11,8 @@ body {
 	height: 100%;
 	font-family: 'Roboto', sans-serif;
 	font-size: 14px;
-	color: @dark-text;
-	background-color: @dark;
+	color: @text-primary;
+	background-color: @bg-primary;
 	padding: 0;
 	margin: 0;
 	-webkit-user-select: none;
@@ -36,22 +25,22 @@ body {
 }
 ::-webkit-scrollbar-track {}
 ::-webkit-scrollbar-thumb {
-  background: @light-highlight;
+  background: @highlight;
 }
 .menubar {
 	z-index: 2;
-	background-color: @light;
-	border-bottom: 2px solid @light-border;
-	height: 32px;
-	line-height: 32px;
+	background-color: @bg-secondary;
+	border-bottom: 2px solid @border;
+	height: 32px !important;
+	line-height: 32px !important;
 	i {
 		padding-right: 5px;
 	}
 }
 .toolbar {
 	z-index: 1;
-	background-color: @light;
-	border-right: 2px solid @light-border;
+	background-color: @bg-secondary;
+	border-right: 2px solid @border;
 	width: 175px;
 	height: ~"calc(100% - 34px)";
 	box-sizing: border-box;
@@ -65,7 +54,7 @@ body {
 		}
 	}
 	&.properties {
-		border-left: 2px solid @light-border;
+		border-left: 2px solid @border;
 		border-right: none;
 		transition: right 200ms;
 		width: 225px;
@@ -93,21 +82,21 @@ body {
 				}
 				input[type=text], textarea {
 					width: 100%;
-					border: 1px solid @light-border;
+					border: 1px solid @border;
 					border-radius: 3px;
 					padding: 3px;
 					box-sizing: border-box;
-					color: @light-text;
+					color: fade(@text-secondary, 50%);
 					transition: all 200ms linear;
 					&:hover {
-						border-color: @light-highlight;
-						color: @dark-text;
+						border-color: @highlight;
+						color: @text-secondary !important;
 					}
 					&:focus {
-						color: @dark-text;
-						border-color: @light-highlight;
+						color: @text-secondary !important;
+						border-color: @highlight;
 						outline: none;
-						box-shadow: inset 0 0 2px @light-highlight;
+						box-shadow: inset 0 0 2px @highlight;
 					}
 				}
 				textarea {
@@ -146,17 +135,17 @@ body {
 			}
 			&:hover {
 				cursor: pointer;
-				background-color: @light-highlight !important;
+				background-color: @highlight !important;
 			}
 			&.selected {
-				background-color: @light-border;
+				background-color: @border;
 				.handle {
 					&:extend(.fa, .fa-square all);
 					padding-right: 5px;
 				}
 			}
 			&.contextSelected {
-				background-color: lighten(@light-highlight, 20%);
+				background-color: lighten(@highlight, 20%);
 			}
 			.handle {
 				&:extend(.fa, .fa-square-o all);
@@ -170,7 +159,7 @@ body {
 	z-index: 2;
 	padding: 5px 15px;
 	list-style-type: none;
-	background-color: lighten(@light-highlight, 20%);
+	background-color: lighten(@highlight, 20%);
 	.handle {
 		&:extend(.fa, .fa-square all);
 		padding-right: 5px;
@@ -178,15 +167,15 @@ body {
 }
 .contextMenu {
 	position: absolute;
-	background-color: @light;
-	border: 1px solid @light-border;
+	background-color: @bg-secondary;
+	border: 1px solid @border;
 	padding: 5px 0;
 	z-index: 11;
 	.item {
 		padding: 2px 5px;
 		cursor: pointer;
 		&:hover {
-			background-color: @light-border;
+			background-color: @border;
 		}
 	}
 }
@@ -199,24 +188,25 @@ body {
 	height: 100%;
 }
 button {
+	color: @text-primary;
 	cursor: pointer;
 	height: 24px;
 	min-width: 60px;
 	margin: 0 5px;
 	outline: none;
 	background-color: inherit;
-	border: 2px solid @light-border;
+	border: 2px solid @border;
 	border-radius: 3px;
 	transition: all 150ms linear;
 	&:hover {
-		border-color: @light-highlight;
-		color: @light-highlight;
+		border-color: @highlight;
+		color: @highlight;
 	}
 	&.disabled {
 		cursor: not-allowed;
 		&:hover {
-			border-color: @light-disabled;
-			color: @light-disabled;
+			border-color: @disabled;
+			color: @disabled;
 		}
 	}
 	i {
@@ -226,7 +216,7 @@ button {
 .pixi {
 	outline: none;
 	z-index: 0;
-	background-color: @dark;
+	background-color: @bg-primary;
 	position: absolute;
 	top: 34px;
 }
@@ -239,7 +229,7 @@ button {
 	margin: 0;
 	padding: 0;
 	li {
-		background-color: @light;
+		background-color: @bg-secondary;
 		pointer-events: all;
 		border-radius: 3px;
 		padding: 5px;
@@ -252,15 +242,15 @@ button {
 		clear: right;
 	}
 	.error {
-		background-color: @light-disabled;
+		background-color: @disabled;
 		&:hover {
-			background-color: lighten(@light-disabled, 20%);
+			background-color: lighten(@disabled, 20%);
 		}
 	}
 	.success {
-		background-color: @light-highlight;
+		background-color: @highlight;
 		&:hover {
-			background-color: lighten(@light-highlight, 20%);
+			background-color: lighten(@highlight, 20%);
 		}
 	}
 }
@@ -274,17 +264,17 @@ button {
 	overflow: auto;
 	.index {
 		box-sizing: border-box;
-		border: 2px solid @light-border;
+		border: 2px solid @border;
 		position: absolute;
 		z-index: 1;
 		transition: all 150ms;
 		cursor: pointer;
 		&.selected {
-			border: 2px solid lighten(@light-highlight, 20%);
+			border: 2px solid lighten(@highlight, 20%);
 			z-index: 2;
 		}
 		&:hover {
-			border: 2px solid @light-highlight;
+			border: 2px solid @highlight;
 			z-index: 2;
 		}
 	}
