@@ -130,10 +130,10 @@ class Stage extends PIXI.Container {
   }
   sortObjects() {
     this._objContainer.children.sort((a, b) => {
-      if (a._obj.z !== b._obj.z) {
-        return a._obj.z - b._obj.z;
+      if (a.z !== b.z) {
+        return a.z - b.z;
       } else {
-        return a._obj.y - b._obj.y;
+        return a.y - b.y;
       }
     })
     this._hasSorted = true;
