@@ -2,6 +2,7 @@ import { observable, computed } from 'mobx'
 import { ipcRenderer } from 'electron'
 
 class Store {
+  @observable theme = '';
   @observable isLoaded = false;
   @observable projectPath = ipcRenderer.sendSync('getDefaultPath');
   @observable mapList = [];

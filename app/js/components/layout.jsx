@@ -10,6 +10,7 @@ import Notifications from './notifications'
 export default class Layout extends React.Component {
   render() {
     const {
+      theme,
       isLoaded,
       projectPath,
       currentMap,
@@ -20,6 +21,7 @@ export default class Layout extends React.Component {
     return (
       <div>
         <Menubar
+          theme={theme}
           isLoaded={isLoaded}
           projectPath={projectPath}
           currentMap={currentMap}

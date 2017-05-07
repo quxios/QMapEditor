@@ -64,8 +64,10 @@ export default class Menubar extends React.Component {
   }
   render() {
     const {
+      theme,
       isLoaded
     } = this.props;
+    let nextTheme = theme === 'light' ? 'Dark' : 'Light';
     return (
       <div className="menubar">
         <div className="left">
@@ -84,6 +86,9 @@ export default class Menubar extends React.Component {
           }
         </div>
         <div className="right">
+          <button onClick={::Manager.changeTheme}>
+            { nextTheme }
+          </button>
           <button onClick={this.openHelp}>
             Help
           </button>
