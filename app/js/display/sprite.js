@@ -48,10 +48,14 @@ function toAry(string) {
 export default class Sprite extends PIXI.Sprite {
   constructor(obj) {
     super();
-    this.x = obj.x;
-    this.y = obj.y;
-    this.anchor.x = obj.anchorX;
-    this.anchor.y = obj.anchorY;
+    this.x = Number(obj.x);
+    this.y = Number(obj.y);
+    this.z = Number(obj.z);
+    this.anchor.x = Number(obj.anchorX);
+    this.anchor.y = Number(obj.anchorY);
+    this.scale.x = Number(obj.scaleX);
+    this.scale.y = Number(obj.scaleY);
+    this.rotation = Number(obj.angle) * (Math.PI / 180);
     this._tick = 0;
     this._tick2 = 0;
     this._frameI = 0;
@@ -109,21 +113,22 @@ export default class Sprite extends PIXI.Sprite {
   }
   onDrag(event) {
     if (this._dragging) {
+      const scaleX = this.parent.parent.scale.x;
+      const scaleY = this.parent.parent.scale.y;
       const newPos = event.data.global;
       const dx = newPos.x - this._prevPos.x;
       const dy = newPos.y - this._prevPos.y;
-      const x = this._obj.x + dx / this.parent.parent.scale.x;
-      const y = this._obj.y + dy / this.parent.parent.scale.y;
-      this._obj.x = Math.round(this.adjustXWithSnap(this._obj.x, x));
-      this._obj.y = Math.round(this.adjustYWithSnap(this._obj.y, y));
-      this._prevPos = { ...event.data.global };
+      const x = this._obj.x + dx / scaleX;
+      const y = this._obj.y + dy / scaleY;
+      this._obj.x = this.adjustXWithSnap(this._obj.x, x, dx);
+      this._obj.y = this.adjustYWithSnap(this._obj.y, y, dy);
+      this._prevPos = { ...newPos };
     }
   }
-  adjustXWithSnap(prevX, nextX) {
+  adjustXWithSnap(prevX, nextX, dx) {
     // disabled for now
     return nextX;
     if (Manager.isPressed(0x12)) return nextX;
-    let dx = nextX - prevX;
     let gridPos = nextX / Store.gridWidth;
     let snapTo;
     if (dx > 0) {
@@ -183,9 +188,10 @@ export default class Sprite extends PIXI.Sprite {
       newValue,
       object
     } = change;
-    if (name === 'x' || name === 'y') {
-      this.x = object.x;
-      this.y = object.y;
+    if (name === 'x' || name === 'y' || name ==='z') {
+      this.x = Number(object.x);
+      this.y = Number(object.y);
+      this.z = Number(object.z);
     }
     if (name === 'z' || name === 'y') {
       this.parent.parent.sortObjects();
@@ -193,9 +199,20 @@ export default class Sprite extends PIXI.Sprite {
     if (name === 'filePath') {
       this.loadImage(newValue);
     }
+    if (name === 'scaleX' || name === 'scaleY') {
+      this.scale.x = Number(object.scaleX);
+      this.scale.y = Number(object.scaleY);
+      this._dataGraphic.scale.x = 1 / this.scale.x;
+      this._dataGraphic.scale.y = 1 / this.scale.y;
+    }
+    if (name === 'angle') {
+      const angle = Number(object.angle) || 0;
+      this.rotation = angle * (Math.PI / 180);
+      this._dataGraphic.rotation = -this.rotation;
+    }
     if (name === 'anchorX' || name === 'anchorY') {
-      this.anchor.x = object.anchorX;
-      this.anchor.y = object.anchorY;
+      this.anchor.x = Number(object.anchorX);
+      this.anchor.y = Number(object.anchorY);
       this.drawData();
     }
     if (name === 'cols' || name === 'rows' || name === 'index') {
@@ -245,8 +262,11 @@ export default class Sprite extends PIXI.Sprite {
   drawData() {
     const {
       cols, rows,
-      anchorX, anchorY
+      anchorX, anchorY,
     } = this._qSprite ? this._qSprite.config : this._obj;
+    const {
+      scaleX, scaleY
+    } = this._obj;
     this.updateFrame();
     this._dataGraphic.clear();
     let width  = this.texture.baseTexture.width;
@@ -285,6 +305,9 @@ export default class Sprite extends PIXI.Sprite {
         }
       }
     }
+    this._dataGraphic.scale.x = 1 / scaleX;
+    this._dataGraphic.scale.y = 1 / scaleY;
+    this._dataGraphic.rotation = -this.rotation;
   }
   drawCollider(collider) {
     let type = collider[0];

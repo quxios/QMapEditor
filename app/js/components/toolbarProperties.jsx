@@ -28,13 +28,12 @@ export default class ToolbarProperties extends React.Component {
   onChange = (e) => {
     const prop = e.target.name;
     let value = e.target.value;
-    if (prop === 'cols' || prop === 'rows' ||
-      prop === 'x' || prop === 'y' || prop === 'z') {
+    if (['cols', 'rows', 'x', 'y', 'z'].includes(prop)) {
       if (!/^-?[0-9]*$/.test(value)) {
         value = String(this.props.mapObject[prop]);
       }
     }
-    if (prop === 'anchorX' || prop === 'anchorY') {
+    if (['anchorX', 'anchorY', 'scaleX', 'scaleY', 'angle'].includes(prop)) {
       if (!/^-?[0-9]*(.[0-9]*)?$/.test(value)) {
         value = String(this.props.mapObject[prop]);
       }
@@ -83,6 +82,7 @@ export default class ToolbarProperties extends React.Component {
     let {
       name,
       x, y, z,
+      scaleX, scaleY, angle,
       anchorX, anchorY,
       filePath, type,
       cols, rows, index, speed,
@@ -94,11 +94,12 @@ export default class ToolbarProperties extends React.Component {
       <div className="propsContainer">
         { this.block1(name) }
         { this.block2(x, y, z) }
-        { !isQSprite && this.block3(anchorX, anchorY) }
-        { this.block4(filePath, type, pose, isQSprite) }
-        { !isQSprite && this.block5(type, cols, rows, index, speed) }
-        { this.block6(notes) }
-        { /*this.block7(meta)*/ }
+        { this.block3(scaleX, scaleY, angle) }
+        { !isQSprite && this.block4(anchorX, anchorY) }
+        { this.block5(filePath, type, pose, isQSprite) }
+        { !isQSprite && this.block6(type, cols, rows, index, speed) }
+        { this.block7(notes) }
+        { /*this.block8(meta)*/ }
       </div>
     )
   }
@@ -136,7 +137,7 @@ export default class ToolbarProperties extends React.Component {
             type="text"
             onChange={this.onChange}
             name="x"
-            value={x}
+            value={Math.round(x)}
           />
         </div>
         <div className="third">
@@ -144,7 +145,7 @@ export default class ToolbarProperties extends React.Component {
             type="text"
             onChange={this.onChange}
             name="y"
-            value={y}
+            value={Math.round(y)}
           />
         </div>
         <div className="third">
@@ -158,7 +159,46 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block3(anchorX, anchorY) {
+  block3(scaleX, scaleY, angle) {
+    return (
+      <div className="props">
+        <div className="third">
+          ScaleX
+        </div>
+        <div className="third">
+          ScaleY
+        </div>
+        <div className="third">
+          Angle
+        </div>
+        <div className="third">
+          <input
+            type="text"
+            onChange={this.onChange}
+            name="scaleX"
+            value={scaleX}
+          />
+        </div>
+        <div className="third">
+          <input
+            type="text"
+            onChange={this.onChange}
+            name="scaleY"
+            value={scaleY}
+          />
+        </div>
+        <div className="third">
+          <input
+            type="text"
+            onChange={this.onChange}
+            name="angle"
+            value={angle}
+          />
+        </div>
+      </div>
+    )
+  }
+  block4(anchorX, anchorY) {
     return (
       <div className="props">
         <div className="half">
@@ -186,7 +226,7 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block4(filePath, type, pose, isQSprite) {
+  block5(filePath, type, pose, isQSprite) {
     if (isQSprite) {
       return this.block4B(filePath, pose, isQSprite);
     }
@@ -214,7 +254,7 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block4B(filePath, pose, isQSprite) {
+  block5B(filePath, pose, isQSprite) {
     const { poses } = Manager.getQSprite(isQSprite);
     let list = [];
     for (let pose in poses) {
@@ -249,7 +289,7 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block5(type, cols, rows, index, speed) {
+  block6(type, cols, rows, index, speed) {
     if (type !== 'spritesheet' && type !== 'animated') return null;
     return (
       <div className="props">
@@ -309,7 +349,7 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block6(notes) {
+  block7(notes) {
     return (
       <div className="props">
         <div className="full">
@@ -325,7 +365,7 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block7(meta) {
+  block8(meta) {
     return (
       <div className="props">
         <div className="full">
