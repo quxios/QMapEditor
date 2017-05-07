@@ -1,5 +1,6 @@
 import Store from './store'
 import Stage from './../display/stage'
+import MapObj from './JSONMapObj'
 
 import { ipcRenderer } from 'electron'
 import fs from 'fs'
@@ -22,9 +23,7 @@ export default class ManagerMain {
     if (Store.isLoaded) {
       try {
         Store.qMap = Array(Store.mapList.length).fill([]);
-        JSON.parse(fs.readFileSync(file2Path, 'utf8')).forEach((qMap, index) => {
-          Store.qMap[index] = qMap || [];
-        })
+        JSON.parse(fs.readFileSync(file2Path, 'utf8')).forEach(::this.parseQMap);
       } catch (e) {
         this.notify('WARN', `Creating new QMap.\n${file2Path} was not found.`, 3000);
         Store.qMap = Array(Store.mapList.length).fill([]);
@@ -33,6 +32,16 @@ export default class ManagerMain {
       this.selectMap(-1);
       this.checkForQSprite();
     }
+  }
+  parseQMap(qMap, index) {
+    if (!qMap) return;
+    for (let i = 0; i < qMap.length; i++) {
+      qMap[i] = {
+        ...MapObj,
+        ...qMap[i]
+      }
+    }
+    Store.qMap[index] = qMap;
   }
   save() {
     if (!Store.isLoaded) return;
@@ -44,13 +53,16 @@ export default class ManagerMain {
   makeSave(data) {
     data.forEach((map) => {
       map.forEach((mapObj) => {
-        mapObj.cols = Number(mapObj.cols) || 1;
-        mapObj.rows = Number(mapObj.rows) || 1;
-        mapObj.x = Number(mapObj.x) || 0;
-        mapObj.y = Number(mapObj.y) || 0;
-        mapObj.z = Number(mapObj.z) || 0;
+        mapObj.cols = Math.round(Number(mapObj.cols)) || 1;
+        mapObj.rows = Math.round(Number(mapObj.rows)) || 1;
+        mapObj.x = Math.round(Number(mapObj.x)) || 0;
+        mapObj.y = Math.round(Number(mapObj.y)) || 0;
+        mapObj.z = Math.round(Number(mapObj.z)) || 0;
         mapObj.anchorX = Number(mapObj.anchorX) || 0;
         mapObj.anchorY = Number(mapObj.anchorY) || 0;
+        mapObj.scaleX = Number(mapObj.scaleX) || 0;
+        mapObj.scaleY = Number(mapObj.scaleY) || 0;
+        mapObj.angle = Number(mapObj.angle) || 0;
       })
     })
     return JSON.stringify(data);
@@ -99,5 +111,13 @@ export default class ManagerMain {
       Store.hasQSprite = false;
       Store.QSprite = null;
     }
+  }
+  changeTheme() {
+    if (Store.theme === 'light') {
+      Store.theme = 'dark';
+    } else {
+      Store.theme = 'light';
+    }
+    ipcRenderer.send('setTheme', Store.theme);
   }
 }
