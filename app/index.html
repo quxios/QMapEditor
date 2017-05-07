@@ -2,7 +2,8 @@
 <html>
 	<head>
 		<title>Map Editor</title>
-		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" id="cssLight" href="css/styleLight.css">
+		<link rel="stylesheet" id="cssDark" href="css/styleDark.css">
 	</head>
   <body oncontextmenu="return false;">
 		<div id="app"></div>
@@ -10,6 +11,7 @@
 			if (process.env.PRODUCTION === 'false') {
 				require('babel-register');
 			}
+			require('./js/css');
 			require('./js/app');
 		</script>
 	</body>
