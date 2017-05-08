@@ -35,9 +35,23 @@ function toObj(string) {
 
 function toAry(string) {
   if (typeof string !== 'string') return [];
-  return string.split(',').map(function(s) {
+  var regex = /\s*(\(.*?\))|([^,]+)/g;
+  var arr = [];
+  while (true) {
+    var match = regex.exec(string);
+    if (match) {
+      arr.push(match[0]);
+    } else {
+      break;
+    }
+  }
+  return arr.map(function(s) {
     s = s.trim();
     if (/^-?\d+\.?\d*$/.test(s)) return Number(s);
+    var p = /^\((\d+),\s*(\d+)\)/.exec(s);
+    if (p) {
+      return new PIXI.Point(Number(p[1]), Number(p[2]));
+    }
     if (s === 'true') return true;
     if (s === 'false') return false;
     if (s === 'null' || s === '') return null;
@@ -324,8 +338,20 @@ export default class Sprite extends PIXI.Sprite {
     this._dataGraphic.beginFill(DATA_FILL_COLLIDER, 0.5);
     if (type === 'circle') {
       this._dataGraphic.drawEllipse(ox + w / 2, oy + h / 2, w / 2, h / 2);
-    } else {
+    } else if (type === 'box') {
       this._dataGraphic.drawRect(ox, oy, w, h);
+    } else if (type === 'poly') {
+      ox = this._obj.width * -anchorX;
+      oy = this._obj.height * -anchorY;
+      const points = collider.slice(1).map(n => {
+        if (n.constructor === PIXI.Point) {
+          return new PIXI.Point(n.x + ox, n.y + oy);
+        }
+        return null;
+      }).filter(n => {
+        return n !== null;
+      })
+      this._dataGraphic.drawPolygon(points);
     }
     this._dataGraphic.endFill();
   }
