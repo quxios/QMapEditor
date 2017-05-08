@@ -63,6 +63,12 @@ RPG Maker MV Z values
 * **8** : Animation
 * **9** : Destination
 
+### Scale X / Y
+The scaling of the sprite. Does not affect the data layer, only the sprite image.
+
+### Angle
+The angle (in degrees) to rotate the sprite. Does not affect the data layer, only the sprite image.
+
 ### Anchor X / Y
 The anchor position on for the sprite. The anchor is shown on the `Map Object`
 with a red dot.
