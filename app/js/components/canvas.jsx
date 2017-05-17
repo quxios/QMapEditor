@@ -1,6 +1,5 @@
 import React from 'react'
-import Store from './../manager/store'
-import Manager from './../manager'
+import Store from './../store'
 import { ipcRenderer, screen } from 'electron'
 
 import Stage from './../display/stage'
@@ -15,20 +14,20 @@ export default class Canvas extends React.Component {
   componentDidMount() {
     let winSize = ipcRenderer.sendSync('getContentSize');
     winSize[1] -= MENUBAR_HEIGHT;
-    this.renderer = Manager.renderer = new PIXI.WebGLRenderer(winSize[0], winSize[1], {
+    this.renderer = Store.renderer = new PIXI.WebGLRenderer(winSize[0], winSize[1], {
       view: this.canvas,
       transparent: true,
       roundPixels: true,
       antialias: true
     })
-    Manager.ticker = new PIXI.ticker.Ticker();
-    Manager.ticker.add(this.updatePIXI)
-    Manager.ticker.start();
+    Store.ticker = new PIXI.ticker.Ticker();
+    Store.ticker.add(this.updatePIXI)
+    Store.ticker.start();
   }
   componentWillUnmount() {
     ipcRenderer.removeListener('resize', this.onResize);
     window.removeEventListener('mouseup', this.onMouseUp);
-    this.ticker = null;
+    Store.ticker = null;
   }
   updatePIXI = () => {
     this.renderer.render(Stage);

@@ -1,5 +1,5 @@
 import React from 'react'
-import Manager from './../manager'
+import Store from './../store'
 import { observer } from 'mobx-react'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 
@@ -44,14 +44,14 @@ const SortableList = SortableContainer(observer(({items, onClick, onContextMenu,
 
 export default class ToolbarObjList extends React.Component {
   onSortStart = (data, e) => {
-    Manager.selectMapObj(data.index);
+    Store.selectMapObj(data.index);
   }
   onSortEnd = (data, e) => {
-    Manager.moveMapObj(data);
-    Manager.selectMapObj(data.newIndex);
+    Store.moveMapObj(data);
+    Store.selectMapObj(data.newIndex);
   }
   onClick = (e, i) => {
-    Manager.selectMapObj(i, true);
+    Store.selectMapObj(i, true);
     e.stopPropagation();
   }
   onContextMenu = (e, i) => {
@@ -59,11 +59,11 @@ export default class ToolbarObjList extends React.Component {
       clientX,
       clientY
     } = e.nativeEvent;
-    Manager.openContext(clientX, clientY, 'mapObj', i);
+    Store.openContext(clientX, clientY, 'mapObj', i);
     e.stopPropagation();
   }
   onDelete = () => {
-    Manager.deleteMapObj(this.props.currentMapObj);
+    Store.deleteMapObj(this.props.currentMapObj);
   }
   shouldComponentUpdate(nextProps, nextState) {
     return nextProps.currentMap !== this.props.currentMap ||
@@ -97,7 +97,7 @@ export default class ToolbarObjList extends React.Component {
           helperClass="sortHelperList"
         />
         <div className="footer">
-          <button onClick={::Manager.addMapObj}>
+          <button onClick={::Store.addMapObj}>
             <i className="fa fa-plus" aria-hidden />
             New
           </button>

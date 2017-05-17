@@ -1,5 +1,4 @@
-import Store from '../manager/store'
-import Manager from './../manager'
+import Store from './../store'
 import { observe } from 'mobx'
 
 import fs from 'fs'
@@ -79,7 +78,7 @@ export default class Sprite extends PIXI.Sprite {
     this._isSelected = false;
     this._qSprite = null;
     if (obj.isQSprite) {
-      const config = Manager.getQSprite(obj.isQSprite);
+      const config = Store.getQSprite(obj.isQSprite);
       this._qSprite = {
         config,
         pose: config.poses[obj.pose]
@@ -115,7 +114,7 @@ export default class Sprite extends PIXI.Sprite {
       this._prevPos = { ...event.data.global };
       this._dragging = true;
       this.alpha = 0.7;
-      Manager.selectMapObj(Store.mapObjects.indexOf(this._obj));
+      Store.selectMapObj(Store.mapObjects.indexOf(this._obj));
     }
   }
   endDrag(event) {
@@ -142,7 +141,7 @@ export default class Sprite extends PIXI.Sprite {
   adjustXWithSnap(prevX, nextX, dx) {
     // disabled for now
     return nextX;
-    if (Manager.isPressed(0x12)) return nextX;
+    if (Store.isPressed(0x12)) return nextX;
     let gridPos = nextX / Store.gridWidth;
     let snapTo;
     if (dx > 0) {
@@ -165,7 +164,7 @@ export default class Sprite extends PIXI.Sprite {
   adjustYWithSnap(prevY, nextY) {
     // disabled for now
     return nextY;
-    if (Manager.isPressed(0x12)) return nextY;
+    if (Store.isPressed(0x12)) return nextY;
     let dy = nextY - prevY;
     let gridPos = nextY / Store.gridHeight;
     let snapTo;
@@ -254,7 +253,7 @@ export default class Sprite extends PIXI.Sprite {
     if (name === 'isQSprite') {
       if (newValue) {
         this._qSprite = {
-          config: Manager.getQSprite(newValue),
+          config: Store.getQSprite(newValue),
           pose: null
         }
         this.anchor.x = this._qSprite.config.anchorX;
@@ -406,7 +405,7 @@ export default class Sprite extends PIXI.Sprite {
       const texture = PIXI.BaseTexture.fromImage(filePath);
       texture.on('error', () => {
         this.texture = PIXI.Texture.EMPTY;
-        Manager.notify('ERROR', 'Failed to load image.');
+        Store.notify('ERROR', 'Failed to load image.');
       })
       if (texture.hasLoaded) {
         this.setSprite(texture);

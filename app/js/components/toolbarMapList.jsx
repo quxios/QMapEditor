@@ -1,5 +1,5 @@
 import React from 'react'
-import Manager from './../manager'
+import Store from './../store'
 
 const ITEM_SHIFT = 10;
 
@@ -44,7 +44,7 @@ export default class ToolbarMapList extends React.Component {
     return left;
   }
   onClick(index) {
-    Manager.selectMap(index, true);
+    Store.selectMap(index, true);
   }
   render() {
     return (

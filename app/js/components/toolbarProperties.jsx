@@ -1,5 +1,5 @@
 import React from 'react'
-import Manager from '../manager'
+import Store from '../store'
 import { observer } from 'mobx-react'
 import { remote, ipcRenderer } from 'electron'
 import path from 'path'
@@ -51,7 +51,7 @@ export default class ToolbarProperties extends React.Component {
     }, (filePaths) => {
       if (!filePaths) return;
       let filePath = path.relative(this.props.projectPath, filePaths[0]);
-      this.updateProperty('isQSprite', Manager.isQSprite(filePath));
+      this.updateProperty('isQSprite', Store.isQSprite(filePath));
       this.updateProperty('pose', '');
       this.updateProperty('filePath', filePath);
     })
@@ -228,7 +228,7 @@ export default class ToolbarProperties extends React.Component {
   }
   block5(filePath, type, pose, isQSprite) {
     if (isQSprite) {
-      return this.block4B(filePath, pose, isQSprite);
+      return this.block5B(filePath, pose, isQSprite);
     }
     return (
       <div className="props">
@@ -255,7 +255,7 @@ export default class ToolbarProperties extends React.Component {
     )
   }
   block5B(filePath, pose, isQSprite) {
-    const { poses } = Manager.getQSprite(isQSprite);
+    const { poses } = Store.getQSprite(isQSprite);
     let list = [];
     for (let pose in poses) {
       if (poses.hasOwnProperty(pose)) {

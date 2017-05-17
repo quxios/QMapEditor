@@ -1,11 +1,11 @@
 import React from 'react'
-import Manager from '../manager'
+import Store from '../store'
 import { observer } from 'mobx-react'
 
 @observer
 export default class ContextMenu extends React.Component {
   onVeilClick = (e) => {
-    Manager.clearContext();
+    Store.clearContext();
     // TODO pass event through events behind veil
     //e.target.style.display = 'none';
     //const elem = document.elementFromPoint(e.clientX, e.clientY);
@@ -29,7 +29,7 @@ export default class ContextMenu extends React.Component {
       const title = item.title;
       const handler = () => {
         item.handler();
-        Manager.clearContext();
+        Store.clearContext();
       }
       return (
         <div key={`context-${i}`} onClick={handler} className="item">

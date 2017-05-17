@@ -2,8 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import PIXI from 'pixi.js'
 
-import Store from './manager/store'
-import Manager from './manager'
+import Store from './store'
 import Layout from './components/layout'
 
 ReactDOM.render(
@@ -12,5 +11,5 @@ ReactDOM.render(
 );
 
 window.onerror = function (errorMsg, url, lineNumber, column, errorObj) {
-  Manager.notify('ERROR', `${errorMsg}\n${url}:${lineNumber}`);
+  Store.notify('ERROR', `${errorMsg}\n${url}:${lineNumber}`);
 };

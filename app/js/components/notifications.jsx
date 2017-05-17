@@ -1,5 +1,5 @@
 import React from 'react'
-import Manager from './../manager'
+import Store from './../store'
 import { observer } from 'mobx-react'
 
 @observer
@@ -15,7 +15,7 @@ export default class Notifications extends React.Component {
         duration
       } = obj;
       const onClick = () => {
-        Manager.clearNotification(obj);
+        Store.clearNotification(obj);
       }
       return (
         <li key={`notification-${i}`} onClick={onClick} className={type.toLowerCase()}>

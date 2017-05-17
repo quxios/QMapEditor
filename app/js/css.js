@@ -3,7 +3,7 @@ import path from 'path'
 import { observe } from 'mobx'
 import { ipcRenderer } from 'electron'
 
-import Store from './manager/store'
+import Store from './store'
 
 document.getElementById('cssLight').disabled = true;
 document.getElementById('cssDark').disabled  = true;

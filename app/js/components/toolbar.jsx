@@ -1,5 +1,5 @@
 import React from 'react'
-import Manager from '../manager'
+import Store from '../store'
 import { observer } from 'mobx-react'
 
 import MapList from './toolbarMapList'

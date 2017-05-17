@@ -1,7 +1,9 @@
+import Actions from './actions'
+
 import { observable, computed } from 'mobx'
 import { ipcRenderer } from 'electron'
 
-class Store {
+class Store extends Actions {
   @observable theme = '';
   @observable isLoaded = false;
   @observable projectPath = ipcRenderer.sendSync('getDefaultPath');
@@ -20,16 +22,26 @@ class Store {
   }
   @observable notifications = [];
   @observable keyState = {};
-  @computed get mapObjects() {
+  hasQSprite = false;
+
+  @computed
+  get mapObjects() {
     if (this.currentMap === -1) return [];
     return this.qMap[this.currentMap];
   }
-  @computed get mapObject() {
+
+  @computed
+  get mapObject() {
     if (this.currentMapObj === -1) return null;
     if (this.currentMapObj >= this.mapObjects.length) return null;
     return this.mapObjects[this.currentMapObj];
   }
-  hasQSprite = false;
+
+  constructor() {
+    super();
+    document.addEventListener('keydown', ::this._onKeydown);
+    document.addEventListener('keyup', ::this._onKeyup);
+  }
 }
 
 export default new Store();

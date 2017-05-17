@@ -1,5 +1,4 @@
-import Store from './store'
-
+import { action } from 'mobx'
 import fs from 'fs'
 import path from 'path'
 
@@ -22,23 +21,26 @@ if (!String.prototype.padStart) {
   };
 }
 
-export default class ManagerMap {
-  selectMap(index, clear) {
-    if (clear && Store.currentMap === index && Store.currentMapObj === -1) {
-      index = -1;
-    }
-    const num = String(index).padStart(3, '0');
-    const mapPath = path.join(Store.projectPath, `./data/Map${num}.json`);
-    try {
-      Store.mapData = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
-    } catch (e) {
-      Store.mapData = null;
-      index = -1;
-    }
-    Store.currentMap = index;
-    Store.currentMapObj = -1;
-    if (index > 0 && !Store.qMap[index]) {
-      Store.qMap[index] = [];
+export default (C) => {
+  return class ActionMap extends C {
+    @action.bound
+    selectMap(index, clear) {
+      if (clear && this.currentMap === index && this.currentMapObj === -1) {
+        index = -1;
+      }
+      const num = String(index).padStart(3, '0');
+      const mapPath = path.join(this.projectPath, `./data/Map${num}.json`);
+      try {
+        this.mapData = JSON.parse(fs.readFileSync(mapPath, 'utf8'));
+      } catch (e) {
+        this.mapData = null;
+        index = -1;
+      }
+      this.currentMap = index;
+      this.currentMapObj = -1;
+      if (index > 0 && !this.qMap[index]) {
+        this.qMap[index] = [];
+      }
     }
   }
 }

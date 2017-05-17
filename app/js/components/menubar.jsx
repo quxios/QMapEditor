@@ -1,5 +1,5 @@
 import React from 'react'
-import Manager from '../manager'
+import Store from '../store'
 import Stage from '../display/stage'
 
 import { ipcRenderer, remote } from 'electron'
@@ -18,7 +18,7 @@ export default class Menubar extends React.Component {
         name: 'RPG Maker MV Project',
         extensions: ['rpgproject']
       }]
-    }, ::Manager.load);
+    }, ::Store.load);
   }
   startWatch(file, projectFile) {
     fs.stat(file, (err, stats) => {
@@ -30,8 +30,8 @@ export default class Menubar extends React.Component {
         fs.watchFile(file, (current, prev) => {
           this._watching[2] = JSON.stringify(fs.statSync(file).mtime);
           const { currentMap } = this.props;
-          Manager.load([this._watching[1]]);
-          Manager.selectMap(currentMap);
+          Store.load([this._watching[1]]);
+          Store.selectMap(currentMap);
         })
       }
     });
@@ -45,8 +45,8 @@ export default class Menubar extends React.Component {
       if (mtime !== this._watching[2]) {
         this._watching[2] = mtime;
         const { currentMap } = this.props;
-        Manager.load([this._watching[1]]);
-        Manager.selectMap(currentMap);
+        Store.load([this._watching[1]]);
+        Store.selectMap(currentMap);
       }
     }
   }
@@ -75,7 +75,7 @@ export default class Menubar extends React.Component {
             Load
           </button>
           { isLoaded &&
-            <button onClick={::Manager.save}>
+            <button onClick={::Store.save}>
               Save
             </button>
           }
@@ -86,7 +86,7 @@ export default class Menubar extends React.Component {
           }
         </div>
         <div className="right">
-          <button onClick={::Manager.changeTheme}>
+          <button onClick={::Store.changeTheme}>
             { nextTheme }
           </button>
           <button onClick={this.openHelp}>

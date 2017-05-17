@@ -1,5 +1,4 @@
-import Store from '../manager/store'
-import Manager from './../manager'
+import Store from './../store'
 import { observe } from 'mobx'
 import Sprite from './sprite'
 
@@ -165,7 +164,7 @@ class Stage extends PIXI.Container {
     this.y = -(localPos.y * this.scale.y) + y;
   }
   screenShot() {
-    if (!Manager.renderer) return;
+    if (!Store.renderer) return;
     if (Store.currentMap > 0) {
       const width  = this._mapWidth * 48;
       const height = this._mapHeight * 48;
@@ -179,12 +178,12 @@ class Stage extends PIXI.Container {
       this.y = 0;
       this.scale.x = 48 / Store.gridWidth;
       this.scale.y = 48 / Store.gridHeight;
-      Manager.selectMapObj(-1);
-      Manager.renderer.render(this, renderTexture);
-      let image = Manager.renderer.extract.base64(renderTexture);
+      Store.selectMapObj(-1);
+      Store.renderer.render(this, renderTexture);
+      let image = Store.renderer.extract.base64(renderTexture);
       image = image.replace(/^data:image\/\w+;base64,/, '');
-      Manager.saveScreenshot(image);
-      Manager.selectMapObj(selected);
+      Store.saveScreenshot(image);
+      Store.selectMapObj(selected);
       this.x = oldX;
       this.y = oldY;
       this.scale.x = oldScaleX;
