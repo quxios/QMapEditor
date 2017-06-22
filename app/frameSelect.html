@@ -2,23 +2,24 @@
 <html>
 	<head>
 		<title>Select a Frame</title>
-		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" id="cssLight" href="css/styleLight.css">
+		<link rel="stylesheet" id="cssDark" href="css/styleDark.css">
     <style>
-      body {
-        background-color: #ffffff;
-      }
 			#frameSelect {
 				padding: 5px;
 			}
     </style>
 	</head>
-  <body oncontextmenu="return false;">
+  <body oncontextmenu="return false;" class="frameSelectBody">
 		<div id="frameSelect"></div>
 		<script>
 			if (process.env.PRODUCTION === 'false') {
 				require('babel-register');
 			}
 			require('./js/frameSelect');
+			const theme = require('electron').ipcRenderer.sendSync('getTheme');
+			document.getElementById('cssLight').disabled = theme !== 'light';
+			document.getElementById('cssDark').disabled  = theme === 'light';
 		</script>
 	</body>
 </html>
