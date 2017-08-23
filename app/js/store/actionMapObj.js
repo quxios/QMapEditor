@@ -5,11 +5,19 @@ import { action } from 'mobx'
 export default (C) => {
   return class ActionMapObj extends C {
     @action.bound
-    addMapObj() {
-      this.mapObjects.push({
-        ...MapObj
-      })
+    addMapObj(data = {}) {
+      let newMapObj = this.createMapObj(data)
+      this.mapObjects.push(newMapObj);
       this.selectMapObj(this.mapObjects.length - 1);
+      return newMapObj;
+    }
+
+    @action.bound
+    createMapObj(data) {
+      return {
+        ...MapObj,
+        ...data
+      }
     }
 
     @action.bound
