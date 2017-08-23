@@ -1,5 +1,6 @@
 import React from 'react'
 import Store from '../store'
+import { toJS } from 'mobx'
 import { observer } from 'mobx-react'
 import { remote, ipcRenderer } from 'electron'
 import path from 'path'
@@ -15,9 +16,10 @@ const EXTRAS = [
 export default class ToolbarProperties extends React.Component {
   componentWillMount() {
     ipcRenderer.on('setFrameIndex', this.onSetIndex);
+    ipcRenderer.on('setCondition', this.onSetCondition);
   }
   componentWillUnmount() {
-    ipcRenderer.removeListener('setFrameIndex', this.onSetIndex);
+    ipcRenderer.removeListener('setCondition', this.onSetCondition);
   }
   updateProperty(key, value) {
     this.props.mapObject[key] = value;
@@ -28,17 +30,72 @@ export default class ToolbarProperties extends React.Component {
   onChange = (e) => {
     const prop = e.target.name;
     let value = e.target.value;
-    if (['cols', 'rows', 'x', 'y', 'z'].includes(prop)) {
-      if (!/^-?[0-9]*$/.test(value)) {
-        value = String(this.props.mapObject[prop]);
+    switch (prop) {
+      case 'cols':
+      case 'rows':
+      case 'x':
+      case 'y':
+      case 'z': {
+        if (!/^-?[0-9]*$/.test(value)) {
+          value = String(this.props.mapObject[prop]);
+        }
+        break;
       }
-    }
-    if (['anchorX', 'anchorY', 'scaleX', 'scaleY', 'angle'].includes(prop)) {
-      if (!/^-?[0-9]*(.[0-9]*)?$/.test(value)) {
-        value = String(this.props.mapObject[prop]);
+      case 'anchorX':
+      case 'anchorY':
+      case 'scaleX':
+      case 'scaleY':
+      case 'angle': {
+        if (!/^-?[0-9]*(.[0-9]*)?$/.test(value)) {
+          value = String(this.props.mapObject[prop]);
+        }
+        break;
+      }
+      case 'notes': {
+        let changed = false;
+        const oldMeta = this.props.mapObject.meta;
+        const newMeta = Store.makeMeta(value);
+        for (let prop in newMeta) {
+          changed = oldMeta[prop] !== newMeta[prop];
+          if (changed) break;
+        }
+        if (!changed) {
+          for (let prop in oldMeta) {
+            changed = oldMeta[prop] !== newMeta[prop];
+            if (changed) break;
+          }
+        }
+        if (changed) {
+          this.updateProperty('meta', newMeta);
+        }
+        break;
       }
     }
     this.updateProperty(prop, value);
+  }
+  onWheel = (e) => {
+    const prop = e.target.name;
+    const dir = e.deltaY > 0 ? -1 : 1;
+    let value = Number(e.target.value) || 0;
+    switch (prop) {
+      case 'cols':
+      case 'rows':
+      case 'x':
+      case 'y':
+      case 'z':
+      case 'angle': {
+        value += 1 * dir;
+        break;
+      }
+      case 'scaleX':
+      case 'scaleY':
+      case 'anchorX':
+      case 'anchorY': {
+        value += 0.1 * dir;
+        break;
+      }
+    }
+    this.updateProperty(prop, String(value));
   }
   openFile = () => {
     remote.dialog.showOpenDialog({
@@ -56,7 +113,41 @@ export default class ToolbarProperties extends React.Component {
       this.updateProperty('filePath', filePath);
     })
   }
-  onIndexSelect = () => {
+  openSelectCondition = (e) => {
+    const {
+      projectPath,
+      mapObject
+    } = this.props;
+    const conditions = toJS(mapObject.conditions);
+    const index = Number(e.target.value);
+    ipcRenderer.send('openSelectCondition', {
+      projectPath,
+      conditions, index
+    });
+  }
+  onSetCondition = (e, data) => {
+    const {
+      index,
+      type,
+      value
+    } = data;
+    if (index === -1) {
+      this.props.mapObject.conditions.push({
+        type,
+        value
+      });
+    } else {
+      this.props.mapObject.conditions[index] = {
+        type,
+        value
+      }
+    }
+  }
+  onDeleteCondition = (e) => {
+    const index = Number(e.target.id);
+    this.props.mapObject.conditions.splice(index, 1);
+  }
+  openSelectIndex = () => {
     const {
       projectPath
     } = this.props;
@@ -65,7 +156,7 @@ export default class ToolbarProperties extends React.Component {
       cols, rows, index,
       height, width
     } = this.props.mapObject;
-    ipcRenderer.send('openFrameSelect', {
+    ipcRenderer.send('openSelectFrame', {
       projectPath, filePath,
       cols, rows, index,
       width: width * cols,
@@ -79,13 +170,14 @@ export default class ToolbarProperties extends React.Component {
     // TODO
   }
   body() {
-    let {
+    const {
       name,
       x, y, z,
       scaleX, scaleY, angle,
       anchorX, anchorY,
       filePath, type,
       cols, rows, index, speed,
+      conditions,
       notes, meta,
       isQSprite, pose
     } = this.props.mapObject;
@@ -98,8 +190,9 @@ export default class ToolbarProperties extends React.Component {
         { !isQSprite && this.block4(anchorX, anchorY) }
         { this.block5(filePath, type, pose, isQSprite) }
         { !isQSprite && this.block6(type, cols, rows, index, speed) }
-        { this.block7(notes) }
-        { /*this.block8(meta)*/ }
+        { this.block7(conditions) }
+        { this.block8(notes) }
+        { /*this.block9(meta)*/ }
       </div>
     )
   }
@@ -136,6 +229,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="x"
             value={Math.round(x)}
           />
@@ -144,6 +238,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="y"
             value={Math.round(y)}
           />
@@ -152,6 +247,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="z"
             value={z}
           />
@@ -175,6 +271,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="scaleX"
             value={scaleX}
           />
@@ -183,6 +280,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="scaleY"
             value={scaleY}
           />
@@ -191,6 +289,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="angle"
             value={angle}
           />
@@ -211,6 +310,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="anchorX"
             value={anchorX}
           />
@@ -219,6 +319,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="anchorY"
             value={anchorY}
           />
@@ -282,7 +383,7 @@ export default class ToolbarProperties extends React.Component {
         </div>
         <div className="half">
           <select value={pose} onChange={this.onChange} name="pose">
-            <option value=''></option>
+            <option value=""></option>
             { list }
           </select>
         </div>
@@ -315,6 +416,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="cols"
             value={cols}
           />
@@ -323,6 +425,7 @@ export default class ToolbarProperties extends React.Component {
           <input
             type="text"
             onChange={this.onChange}
+            onWheel={this.onWheel}
             name="rows"
             value={rows}
           />
@@ -330,7 +433,7 @@ export default class ToolbarProperties extends React.Component {
         {
           type === 'spritesheet' &&
           <div className="third">
-            <button onClick={this.onIndexSelect}>
+            <button onClick={this.openSelectIndex}>
               Select
             </button>
           </div>
@@ -349,7 +452,53 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block7(notes) {
+  block7(conditions) {
+    return (
+      <div className="props">
+        <div className="full">
+          Conditions
+        </div>
+        <div className="full conditions">
+          { conditions.map((v, i) => {
+            const {
+              type,
+              value
+            } = v;
+            return (
+              <div
+                value={i}
+                className="full condition"
+                key={`condition-${i}`}
+                onDoubleClick={this.openSelectCondition}>
+                <div className="col1">
+                  {
+                    type.toUpperCase()
+                  }
+                </div>
+                <div className="col2">
+                  {
+                    value.join(': ')
+                  }
+                </div>
+                <i
+                  onClick={this.onDeleteCondition}
+                  id={i}
+                  className="col3"
+                  aria-hidden
+                />
+              </div>
+            )
+          })}
+      </div>
+        <div className="full">
+          <button value="-1" onClick={this.openSelectCondition}>
+            New Condition
+          </button>
+        </div>
+      </div>
+    )
+  }
+  block8(notes) {
     return (
       <div className="props">
         <div className="full">
@@ -365,7 +514,7 @@ export default class ToolbarProperties extends React.Component {
       </div>
     )
   }
-  block8(meta) {
+  block9(meta) {
     return (
       <div className="props">
         <div className="full">
