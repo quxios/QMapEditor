@@ -10,6 +10,34 @@ export default (C) => {
     }
 
     @action.bound
+    makeMeta(string) {
+      const inlineRegex = /<([^<>:\/]+)(?::?)([^>]*)>/g;
+      const blockRegex = /<([^<>:\/]+)>([\s\S]*?)<\/\1>/g;
+      let meta = {};
+      while (true) {
+        let match = inlineRegex.exec(string);
+        if (match) {
+          if (match[2] === '') {
+            meta[match[1]] = true;
+          } else {
+            meta[match[1]] = match[2];
+          }
+        } else {
+          break;
+        }
+      }
+      while (true) {
+        let match = blockRegex.exec(string);
+        if (match) {
+          meta[match[1]] = match[2];
+        } else {
+          break;
+        }
+      }
+      return meta;
+    }
+
+    @action.bound
     getUniqName(arr, prop, base, i = 0) {
       let name;
       let valid = false;
@@ -27,5 +55,6 @@ export default (C) => {
       }
       return name;
     }
+
   }
 }
