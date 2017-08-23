@@ -21,7 +21,6 @@ class Store extends Actions {
     items: []
   }
   @observable notifications = [];
-  @observable keyState = {};
   hasQSprite = false;
 
   @computed
@@ -35,12 +34,6 @@ class Store extends Actions {
     if (this.currentMapObj === -1) return null;
     if (this.currentMapObj >= this.mapObjects.length) return null;
     return this.mapObjects[this.currentMapObj];
-  }
-
-  constructor() {
-    super();
-    document.addEventListener('keydown', ::this._onKeydown);
-    document.addEventListener('keyup', ::this._onKeyup);
   }
 }
 
