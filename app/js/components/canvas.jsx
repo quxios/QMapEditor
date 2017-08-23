@@ -1,6 +1,7 @@
 import React from 'react'
 import Store from './../store'
 import { ipcRenderer, screen } from 'electron'
+import path from 'path';
 
 import Stage from './../display/stage'
 
@@ -12,25 +13,11 @@ export default class Canvas extends React.Component {
     window.addEventListener('mouseup', this.onMouseUp);
   }
   componentDidMount() {
-    let winSize = ipcRenderer.sendSync('getContentSize');
-    winSize[1] -= MENUBAR_HEIGHT;
-    this.renderer = Store.renderer = new PIXI.WebGLRenderer(winSize[0], winSize[1], {
-      view: this.canvas,
-      transparent: true,
-      roundPixels: true,
-      antialias: true
-    })
-    Store.ticker = new PIXI.ticker.Ticker();
-    Store.ticker.add(this.updatePIXI)
-    Store.ticker.start();
-  }
-  componentWillUnmount() {
-    ipcRenderer.removeListener('resize', this.onResize);
-    window.removeEventListener('mouseup', this.onMouseUp);
-    Store.ticker = null;
+    Store.setup(this.canvas);
+    Store.ticker.add(this.updatePIXI);
   }
   updatePIXI = () => {
-    this.renderer.render(Stage);
+    Store.renderer.render(Stage);
     Stage.update();
     if (this._isDragging) {
       this.updateDrag();
@@ -47,7 +34,7 @@ export default class Canvas extends React.Component {
   }
   onResize = (event, width, height) => {
     height -= MENUBAR_HEIGHT;
-    this.renderer.resize(width, height);
+    Store.renderer.resize(width, height);
   }
   onClick = (event) => {
     this.canvas.focus();
@@ -74,6 +61,22 @@ export default class Canvas extends React.Component {
     const y = event.pageY - event.target.offsetTop;
     Stage.zoomAt(x, y, event.deltaY);
   }
+  onDrop = (event) => {
+    if (this.props.currentMap === -1) return;
+    const x = event.pageX - event.target.offsetLeft;
+    const y = event.pageY - event.target.offsetTop;
+    const pos = Stage.toLocal(new PIXI.Point(x, y));
+    for (let file of event.dataTransfer.files) {
+      if (file.type === 'image/png') {
+        let filePath = path.relative(Store.projectPath, file.path);
+        let mapObj = Store.addMapObj({
+          filePath,
+          x: pos.x,
+          y: pos.y
+        });
+      }
+    }
+  }
   shouldComponentUpdate(nextProps, nextState) {
     return false;
   }
@@ -86,6 +89,8 @@ export default class Canvas extends React.Component {
         onClick={this.onClick}
         onMouseDown={this.onMouseDown}
         onWheel={this.onWheel}
+        onDragOver={() => {return false;}}
+        onDrop={this.onDrop}
       />
     )
   }
