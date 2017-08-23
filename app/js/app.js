@@ -1,6 +1,5 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import PIXI from 'pixi.js'
 
 import Store from './store'
 import Layout from './components/layout'
