@@ -2,10 +2,10 @@
 <html>
 	<head>
 		<title>Help</title>
-		<link rel="stylesheet" href="css/style.css">
+		<link rel="stylesheet" id="cssLight" href="css/styleLight.css">
+		<link rel="stylesheet" id="cssDark" href="css/styleDark.css">
     <style>
 			body {
-				background-color: #ffffff;
 				overflow: auto;
 				-webkit-user-select: text;
 			}
@@ -18,20 +18,24 @@
 			}
     </style>
 	</head>
-  <body>
+  <body class="secondary">
 		<h1 id="version"></h1>
 		<div id="help"></div>
 		<script>
-			var marked = require('marked');
-			var fs = require('fs');
-			var path = require('path');
-			var json = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+			const theme = require('electron').ipcRenderer.sendSync('getTheme');
+			document.getElementById('cssLight').disabled = theme !== 'light';
+			document.getElementById('cssDark').disabled  = theme === 'light';
+
+		 	const marked = require('marked');
+		 	const fs = require('fs');
+		 	const path = require('path');
+		 	const json = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
 			document.getElementById('version').innerHTML = `Current Version: ${json.version}`;
-			var content = fs.readFileSync(path.join(__dirname, 'HELP.md'), 'utf8');
+		 	const content = fs.readFileSync(path.join(__dirname, 'HELP.md'), 'utf8');
 			marked(content, function(err, content) {
 				document.getElementById('help').innerHTML = content;
-				var links = document.getElementsByTagName('a');
-				var shell = require('electron').shell;
+				const links = document.getElementsByTagName('a');
+				const shell = require('electron').shell;
 				for (var i = 0; i < links.length; i++) {
 					links[i].onclick = function(event) {
 						event.preventDefault();
