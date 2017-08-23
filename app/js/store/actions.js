@@ -3,6 +3,7 @@ import ActionUtils from './actionUtils'
 import ActionInput from './actionInput'
 import ActionNotifications from './actionNotifications'
 import ActionContext from './actionContext'
+import ActionHistory from './actionHistory'
 import ActionMap from './actionMap'
 import ActionMapObj from './actionMapObj'
 
@@ -20,6 +21,7 @@ export default Mixin(
   ActionInput,
   ActionNotifications,
   ActionContext,
+  ActionHistory,
   ActionMap,
   ActionMapObj
 );
