@@ -6,6 +6,8 @@ export default {
   width: 0, height: 0,
   filePath: '', type: 'full',
   cols: 1,  rows: 1, index: 0, speed: 15,
+  conditions: [],
   notes: '', meta: {},
-  isQSprite: false, pose: ''
+  isQSprite: false, pose: '',
+  __hidden: false, __locked: false
 }
