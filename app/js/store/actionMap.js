@@ -41,6 +41,7 @@ export default (C) => {
       if (index > 0 && !this.qMap[index]) {
         this.qMap[index] = [];
       }
+      this.clearHistory();
     }
   }
 }
