@@ -27,6 +27,9 @@ body {
 ::-webkit-scrollbar-thumb {
   background: @highlight;
 }
+a {
+	color: @highlight;
+}
 .menubar {
 	z-index: 2;
 	background-color: @bg-secondary;
@@ -54,6 +57,7 @@ body {
 		}
 	}
 	&.properties {
+		overflow-y: auto;
 		border-left: 2px solid @border;
 		border-right: none;
 		transition: right 200ms;
@@ -79,6 +83,34 @@ body {
 					box-sizing: border-box;
 					width: 33%;
 					padding: 5px;
+				}
+				.conditions {
+					overflow-y: auto;
+					max-height: 125px;
+					box-sizing: border-box;
+					.condition {
+						display: flex;
+						flex-wrap: wrap;
+						cursor: pointer;
+						&:hover {
+							background-color: @highlight !important;
+						}
+						.col1 {
+							width: ~"calc(100% - 60% - 15px)";
+						}
+						.col2 {
+							width: ~"calc(100% - 40% - 15px)";
+							height: 17px;
+							overflow: hidden;
+						}
+						.col3 {
+							&:extend(.fa, .fa-minus all);
+							width: 15px;
+							&:hover {
+								color: @disabled;
+							}
+						}
+					}
 				}
 				input[type=text], textarea {
 					width: 100%;
@@ -127,11 +159,43 @@ body {
 		overflow-y: auto;
 		overflow-x: hidden;
 		li {
-			padding: 3px 10px;
+			padding: 3px 3px 3px 10px;
 			overflow: hidden;
 			a {
+				color: inherit;
 				display: block;
-				width: 100%;
+				width: ~"calc(100% - 58px)";
+				height: 17px;
+				float: left;
+				overflow: hidden;
+			}
+			.handle {
+				&:extend(.fa, .fa-square-o all);
+				padding-right: 5px;
+				float: left;
+				width: 15px;
+			}
+			.locked {
+				&:extend(.fa, .fa-lock all);
+				padding-left: 5px;
+				float: right;
+				width: 15px;
+			}
+			.unlocked {
+				&:extend(.fa, .fa-unlock all);
+				padding-left: 5px;
+				float: right;
+				width: 15px;
+			}
+			.visible {
+				&:extend(.fa, .fa-eye all);
+				float: right;
+				width: 15px;
+			}
+			.hidden {
+				&:extend(.fa, .fa-eye-slash all);
+				float: right;
+				width: 15px;
 			}
 			&:hover {
 				cursor: pointer;
@@ -141,16 +205,10 @@ body {
 				background-color: @border;
 				.handle {
 					&:extend(.fa, .fa-square all);
-					padding-right: 5px;
 				}
 			}
 			&.contextSelected {
 				background-color: lighten(@highlight, 20%);
-			}
-			.handle {
-				&:extend(.fa, .fa-square-o all);
-				padding-right: 5px;
-				float: left;
 			}
 		}
 	}
@@ -260,7 +318,7 @@ button {
 .right {
 	float: right;
 }
-.frameSelectBody {
+.secondary {
 	background-color: @bg-secondary;
 }
 .frameSelect {
@@ -281,6 +339,46 @@ button {
 			z-index: 2;
 		}
 	}
+}
+.conditionSelect {
+	overflow: hidden;
+	width: 100%;
+	.header {
+		padding: 5px;
+		width: ~"calc(100% - 10px)";
+		.type {
+			font-weight: bold;
+		}
+		select {
+			float: right;
+			width: 50%;
+		}
+	}
+	.body {
+		padding: 5px;
+		.value {
+			font-weight: bold;
+			margin-right: 5px;
+		}
+		.col0 {
+			padding: 0px;
+			box-sizing: border-box;
+			width: 100%;
+		}
+		.col1 {
+			padding: 0px;
+			box-sizing: border-box;
+			width: 60%;
+			margin-right: 5px;
+		}
+		.col2 {
+			padding: 0px;
+			box-sizing: border-box;
+			width: ~"calc(40% - 5px)";
+			vertical-align: top;
+		}
+	}
+
 }
 .fixedRight {
 	position: fixed;
