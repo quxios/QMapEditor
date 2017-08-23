@@ -59,6 +59,15 @@ function toAry(string) {
 };
 
 export default class Sprite extends PIXI.Sprite {
+  get visible() {
+    if (this.parent && !this.parent.visible) {
+      return false;
+    }
+    return this._visible && !this._culled;
+  }
+  set visible(value) {
+    this._visible = value;
+  }
   constructor(obj) {
     super();
     this.x = Number(obj.x);
@@ -69,14 +78,18 @@ export default class Sprite extends PIXI.Sprite {
     this.scale.x = Number(obj.scaleX);
     this.scale.y = Number(obj.scaleY);
     this.rotation = Number(obj.angle) * (Math.PI / 180);
+    this.meta = obj.meta;
     this._tick = 0;
     this._tick2 = 0;
     this._frameI = 0;
     this._frames = [];
     this._realTexture = null;
     this._obj = obj;
+    this._isHidden = obj.__hidden;
+    this._isLocked = obj.__locked;
     this._isSelected = false;
     this._qSprite = null;
+    if (this._isHidden) this.visible = false;
     if (obj.isQSprite) {
       const config = Store.getQSprite(obj.isQSprite);
       this._qSprite = {
@@ -89,13 +102,13 @@ export default class Sprite extends PIXI.Sprite {
     this._dataGraphic = new PIXI.Graphics();
     this._dataGraphic.alpha = 0;
     this.addChild(this._dataGraphic);
-    this.makeMeta();
     this.loadImage(obj.filePath);
     this.addListeners();
   }
   addListeners() {
     this.buttonMode = true;
-    this.interactive = true;
+    this.interactive = !this._isLocked && !this._isHidden;
+    this.interactiveChildren = false;
     this.on('mousedown', ::this.startDrag);
     this.on('mouseup', ::this.endDrag);
     this.on('mouseupoutside', ::this.endDrag);
@@ -110,6 +123,7 @@ export default class Sprite extends PIXI.Sprite {
     this._observingB();
   }
   startDrag(event) {
+    if (this._isLocked || this._isHidden) return;
     if (event.data.originalEvent.button === 0) { // Leftclick
       this._prevPos = { ...event.data.global };
       this._dragging = true;
@@ -186,11 +200,13 @@ export default class Sprite extends PIXI.Sprite {
     return nextY;
   }
   onOver(event) {
+    if (this._isLocked || this._isHidden) return;
     if (!this._isSelected) {
       this._dataGraphic.alpha = 0.8;
     }
   }
   onOut(event) {
+    if (this._isLocked || this._isHidden) return;
     if (!this._isSelected) {
       this._dataGraphic.alpha = 0;
     }
@@ -232,21 +248,20 @@ export default class Sprite extends PIXI.Sprite {
       this.setSprite(this._realTexture);
       this.drawData();
     }
-    if (name === 'notes') {
-      if (!this.cooldown) {
-        this.makeMeta();
+    if (name === 'meta') {
+      this.meta = object.meta;
+      if (!this._cooldown && !this._requested) {
         this.applyMeta();
         this.drawData();
-        this.cooldown = true;
+        this._cooldown = true;
         window.setTimeout(() => {
-          this.cooldown = null;
+          this._cooldown = false;
         }, 1000);
-      } else if (!this.requested) {
-        this.requested = window.setTimeout(() => {
-          this.makeMeta();
+      } else if (!this._requested) {
+        this._requested = window.setTimeout(() => {
           this.applyMeta();
           this.drawData();
-          this.requested = null;
+          this._requested = null;
         }, 1000);
       }
     }
@@ -266,6 +281,12 @@ export default class Sprite extends PIXI.Sprite {
     }
     if (name === 'pose' && this._qSprite) {
       this._qSprite.pose = this._qSprite.config.poses[newValue];
+    }
+    if (name === '__hidden' || name === '__locked') {
+      this._isHidden = object.__hidden;
+      this._isLocked = object.__locked;
+      this.visible = !this._isHidden;
+      this.interactive = !object.__locked && !object.__hidden;
     }
   }
   onMapObjectChange(change) {
@@ -354,34 +375,6 @@ export default class Sprite extends PIXI.Sprite {
     }
     this._dataGraphic.endFill();
   }
-  makeMeta() {
-    const notes = this._obj.notes || '';
-    const inlineRegex = /<([^<>:\/]+)(?::?)([^>]*)>/g;
-    const blockRegex = /<([^<>:\/]+)>([\s\S]*?)<\/\1>/g;
-    this.meta = {};
-    for (;;) {
-      var match = inlineRegex.exec(notes);
-      if (match) {
-        if (match[2] === '') {
-          this.meta[match[1]] = true;
-        } else {
-          this.meta[match[1]] = match[2];
-        }
-      } else {
-          break;
-      }
-    }
-    for (;;) {
-      var match = blockRegex.exec(notes);
-      if (match) {
-        this.meta[match[1]] = match[2];
-      } else {
-          break;
-      }
-    }
-    this.applyMeta();
-    return this.meta;
-  }
   applyMeta() {
     if (this.meta.tint) {
       const tint = this.meta.tint.split(',').map(Number);
@@ -445,11 +438,32 @@ export default class Sprite extends PIXI.Sprite {
     this._obj.height = frameH;
   }
   update() {
-    if (this.alpha === 0) return;
+    if (this.parent) this.updateCulling();
+    if (this.alpha === 0 || !this.visible) return;
     if (this.meta) this.updateMeta();
     if (this._obj.type === 'animated' || this._qSprite) {
       this.updateAnimation();
     }
+    if (this._isSelected && document.activeElement.className === 'pixi') {
+      this.updateInput();
+    }
+  }
+  updateCulling() {
+    return;
+    // TODO consider parent.parent.scale
+    let x = this.position.x;
+    let y = this.position.y;
+    x += this.parent.parent.x;
+    y += this.parent.parent.y;
+    const x1 = x + (this.width * -this.anchor.x);
+    const y1 = y + (this.height * -this.anchor.y);
+    const x2 = x1 + this.width;
+    const y2 = y1 + this.height;
+    const xMax = Store.renderer.width + 24;
+    const yMax = Store.renderer.height + 24;
+    const outX = x2 < 250 || x1 > xMax;
+    const outY = y2 < -24 || y1 > yMax;
+    this._culled = outX || outY;
   }
   updateMeta() {
     if (this.meta.breath) {
@@ -501,6 +515,23 @@ export default class Sprite extends PIXI.Sprite {
       if (frame) {
         this.texture = frame;
       }
+    }
+  }
+  updateInput() {
+    if (this._isLocked || this._isHidden) return;
+    const mod = Store.isPressed(0x10);
+    const amt = 1 + (mod ? 4 : 0);
+    if (Store.isLongPressed(0x25)) {
+      this._obj.x -= amt;
+    }
+    if (Store.isLongPressed(0x27)) {
+      this._obj.x += amt;
+    }
+    if (Store.isLongPressed(0x26)) {
+      this._obj.y -= amt;
+    }
+    if (Store.isLongPressed(0x28)) {
+      this._obj.y += amt;
     }
   }
 }
