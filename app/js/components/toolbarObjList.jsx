@@ -84,6 +84,9 @@ export default class ToolbarObjList extends React.Component {
     Store.openContext(clientX, clientY, 'mapObj', i);
     e.stopPropagation();
   }
+  onAdd = () => {
+    Store.addMapObj();
+  }
   onDelete = () => {
     Store.deleteMapObj(this.props.currentMapObj);
   }
@@ -127,7 +130,7 @@ export default class ToolbarObjList extends React.Component {
           helperClass="sortHelperList"
         />
         <div className="footer">
-          <button onClick={Store.addMapObj}>
+          <button onClick={this.onAdd}>
             <i className="fa fa-plus" aria-hidden />
             New
           </button>
