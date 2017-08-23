@@ -9,11 +9,14 @@
 [RPGMakerWebs thread](https://forums.rpgmakerweb.com/index.php?threads/qplugins-latest-qimport.73023/)
 
 # Controls
-* Move items around in the Map Objects panel by drag-n-drop
-* Pan Map with middle mouse button / right mouse button
-* Select Map Object by left clicking it
-* Move Map Object by drag-n-drop. Disable grid snapping when dragging by holding down Alt
-* Zoom Map in/out with scroll wheel
+* Move `Map Objects` around in the `Map Objects panel` by drag-n-drop
+* Pan `Map` by holding down middle mouse button or right mouse button
+* Select `Map Object` by left clicking it in the `Map Objects panel` or by clicking its image on the `Map`
+* Move` Map Object` by drag-n-drop or with the arrow keys. Disable grid snapping when dragging by holding down Alt
+* Inc or Dec input field values with scroll wheel
+* Zoom `Map` in/out with scroll wheel
+* Lock a `Map Object` by clicking on the lock icon next to it's name in the `Map Objects panel`
+* Hide a `Map Object` by clicking on the eye icon next to it's name in the `Map Objects panel`. This will only hide it in the editor, not in game!
 
 
 # Instructions
@@ -100,6 +103,11 @@ frame you want the `Map Object` to use.
 Only shown when type is `Animated`
 
 The wait time between the frames. 60 frames is 1 second.
+
+### Conditions
+Select the condition for the Map Object to appear. If no conditions are set the
+`Map Object` will always be visible. If any condition in the condition list return
+false the `Map Object` will not be visible.
 
 ### Notes
 You can add certain note tags here to add "effects" to the map object. The
