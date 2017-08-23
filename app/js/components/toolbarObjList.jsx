@@ -3,36 +3,58 @@ import Store from './../store'
 import { observer } from 'mobx-react'
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 
-const SortableItem = SortableElement(({value, i, onClick, onContext, left, isSelected, isContextSelected}) => {
-  const onClick2 = (e) => {
+const SortableItem = SortableElement(observer(props => {
+  const {
+    mapObj, i,
+    onClick, onContext,
+    isSelected, isContextSelected
+  } = props;
+  const onClick2 = e => {
     if (onClick) onClick(e, i);
   }
-  const onContext2 = (e) => {
+  const onContext2 = e => {
     if (onContext) onContext(e, i);
   }
+  const onLock = e => {
+    mapObj.__locked = !mapObj.__locked;
+  }
+  const onHide = e => {
+    mapObj.__hidden = !mapObj.__hidden;
+  }
   let cls = isSelected ? 'selected' : '';
-  //let clss = 'item' + (isSelected ? ' selected' : '');
   if (isContextSelected) cls += ' contextSelected';
+  const lockCls = mapObj.__locked ? 'locked' : 'unlocked';
+  const eyeCls = mapObj.__hidden ? 'visible' : 'hidden';
   return (
     <li className={cls} onClick={onClick2} onContextMenu={onContext2}>
       <i className="handle" aria-hidden />
-      <a>{value}</a>
+      <a>{mapObj.name}</a>
+      <i className={lockCls} aria-hidden onClick={onLock} />
+      <i className={eyeCls} aria-hidden onClick={onHide} />
     </li>
   )
-});
+}));
 
-const SortableList = SortableContainer(observer(({items, onClick, onContextMenu, selected, selectedContext}) => {
+const SortableList = SortableContainer(observer(props => {
+  const {
+    items,
+    onClick, onContextMenu,
+    onHide, onLock,
+    selected, selectedContext
+  } = props;
   return (
-    <ul>
+    <ul id="ListMapObj">
       {items.map((value, index) => {
         return (
           <SortableItem
             key={`obj-${index}`}
             index={index}
             i={index}
-            value={value.name}
+            mapObj={value}
             onClick={onClick}
             onContext={onContextMenu}
+            onHide={onHide}
+            onLock={onLock}
             isSelected={selected === index}
             isContextSelected={selectedContext === index}
           />
@@ -71,6 +93,14 @@ export default class ToolbarObjList extends React.Component {
       nextProps.mapObjects !== this.props.mapObjects ||
       nextProps.selectedContext !== this.props.selectedContext
   }
+  componentDidUpdate(prevProps) {
+    if (prevProps.currentMapObj !== this.props.currentMapObj) {
+      const selected = document.getElementById('ListMapObj').getElementsByClassName('selected');
+      if (selected[0]) {
+        selected[0].scrollIntoView(false);
+      }
+    }
+  }
   body() {
     const {
       mapObjects,
@@ -97,7 +127,7 @@ export default class ToolbarObjList extends React.Component {
           helperClass="sortHelperList"
         />
         <div className="footer">
-          <button onClick={::Store.addMapObj}>
+          <button onClick={Store.addMapObj}>
             <i className="fa fa-plus" aria-hidden />
             New
           </button>
