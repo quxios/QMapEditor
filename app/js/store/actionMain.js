@@ -5,8 +5,25 @@ import { ipcRenderer } from 'electron'
 import fs from 'fs'
 import path from 'path'
 
+const MENUBAR_HEIGHT = 34;
+
 export default (C) => {
   return class ActionMain extends C {
+    @action.bound
+    setup(canvas) {
+      let winSize = ipcRenderer.sendSync('getContentSize');
+      winSize[1] -= MENUBAR_HEIGHT;
+      this.renderer = new PIXI.WebGLRenderer(winSize[0], winSize[1], {
+        view: canvas,
+        transparent: true,
+        roundPixels: true,
+        antialias: true
+      })
+      this.ticker = new PIXI.ticker.Ticker();
+      this.ticker.add(this.updateInput);
+      this.ticker.start();
+    }
+
     @action.bound
     load(fileNames) {
       if (!fileNames) return;
@@ -24,7 +41,7 @@ export default (C) => {
       if (this.isLoaded) {
         try {
           this.qMap = Array(this.mapList.length).fill([]);
-          JSON.parse(fs.readFileSync(file2Path, 'utf8')).forEach(::this.parseQMap);
+          JSON.parse(fs.readFileSync(file2Path, 'utf8')).forEach(this.parseQMap);
         } catch (e) {
           this.notify('WARN', `Creating new QMap.\n${file2Path} was not found.`, 3000);
           this.qMap = Array(this.mapList.length).fill([]);
@@ -41,7 +58,8 @@ export default (C) => {
       for (let i = 0; i < qMap.length; i++) {
         qMap[i] = {
           ...MapObj,
-          ...qMap[i]
+          ...qMap[i],
+          meta: this.makeMeta(qMap[i].notes || '')
         }
       }
       this.qMap[index] = qMap;
@@ -70,8 +88,8 @@ export default (C) => {
           mapObj.scaleX = Number(mapObj.scaleX) || 0;
           mapObj.scaleY = Number(mapObj.scaleY) || 0;
           mapObj.angle = Number(mapObj.angle) || 0;
-        })
-      })
+        });
+      });
       return JSON.stringify(data);
     }
 
