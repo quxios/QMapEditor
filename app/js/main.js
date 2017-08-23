@@ -9,7 +9,8 @@ let settingsPath = path.join(root,  '../winData.json');
 
 let win;
 let help;
-let frameSelect;
+let selectFrame;
+let selectCondition;
 const MIN_WIDTH = 900;
 const MIN_HEIGHT = 500;
 const DEFAULT_WINDATA = {
@@ -127,10 +128,10 @@ function createHelp() {
   })
 }
 
-function createFrameSelect(data) {
+function createSelectFrame(data) {
   const dataW = Math.min(data.width + 16, winData.width);
   const dataH = Math.min(data.height + 40, winData.height);
-  frameSelect = new BrowserWindow({
+  selectFrame = new BrowserWindow({
     parent: win,
     modal: true,
     show: false,
@@ -145,34 +146,78 @@ function createFrameSelect(data) {
       devTools: (process.argv || []).indexOf('--dev') !== -1
     }
   })
-  frameSelect.setMenu(null);
-  frameSelect.loadURL(url.format({
-    pathname: path.join(__dirname, '../frameSelect.html'),
+  selectFrame.setMenu(null);
+  selectFrame.loadURL(url.format({
+    pathname: path.join(__dirname, '../selectFrame.html'),
     protocol: 'file:',
     slashes: true
   }))
   if (!isNaN(winData.frameX) && !isNaN(winData.frameY)) {
-    frameSelect.setPosition(winData.frameX, winData.frameY);
+    selectFrame.setPosition(winData.frameX, winData.frameY);
   } else {
     const x = Math.floor(win.getPosition()[0] + Math.abs(win.getSize()[0] - 650) / 2);
     const y = Math.floor(win.getPosition()[1] + Math.abs(win.getSize()[1] - 600) / 2);
-    frameSelect.setPosition(x, y);
+    selectFrame.setPosition(x, y);
   }
-  frameSelect.on('resize', (e) => {
-    [winData.frameWidth, winData.frameHeight] = frameSelect.getSize();
+  selectFrame.on('resize', (e) => {
+    [winData.frameWidth, winData.frameHeight] = selectFrame.getSize();
   })
-  frameSelect.on('move', (e) => {
-    [winData.frameX, winData.frameY] = frameSelect.getPosition();
+  selectFrame.on('move', (e) => {
+    [winData.frameX, winData.frameY] = selectFrame.getPosition();
   })
-  frameSelect.once('ready-to-show', () => {
-    frameSelect.show();
-    frameSelect.webContents.send('init', data);
+  selectFrame.once('ready-to-show', () => {
+    selectFrame.show();
+    selectFrame.webContents.send('init', data);
   })
-  frameSelect.webContents.openDevTools({
+  selectFrame.webContents.openDevTools({
     detach: true
   })
-  frameSelect.webContents.once('devtools-opened', () => {
-    frameSelect.focus();
+  selectFrame.webContents.once('devtools-opened', () => {
+    selectFrame.focus();
+  })
+}
+
+function createSelectCondition(data) {
+  selectCondition = new BrowserWindow({
+    parent: win,
+    modal: true,
+    show: false,
+    width: 325,
+    height: 250,
+    resizable: false,
+    minimizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    useContentSize: true,
+    webPreferences: {
+      devTools: (process.argv || []).indexOf('--dev') !== -1
+    }
+  })
+  selectCondition.setMenu(null);
+  selectCondition.loadURL(url.format({
+    pathname: path.join(__dirname, '../selectCondition.html'),
+    protocol: 'file:',
+    slashes: true
+  }))
+  if (!isNaN(winData.conditionX) && !isNaN(winData.conditionY)) {
+    selectCondition.setPosition(winData.conditionX, winData.conditionY);
+  } else {
+    const x = Math.floor(win.getPosition()[0] + Math.abs(win.getSize()[0] - 650) / 2);
+    const y = Math.floor(win.getPosition()[1] + Math.abs(win.getSize()[1] - 600) / 2);
+    selectCondition.setPosition(x, y);
+  }
+  selectCondition.on('move', (e) => {
+    [winData.conditionX, winData.conditionY] = selectCondition.getPosition();
+  })
+  selectCondition.once('ready-to-show', () => {
+    selectCondition.show();
+    selectCondition.webContents.send('init', data);
+  })
+  selectCondition.webContents.openDevTools({
+    detach: true
+  })
+  selectCondition.webContents.once('devtools-opened', () => {
+    selectCondition.focus();
   })
 }
 
@@ -214,11 +259,18 @@ ipcMain.on('openHelp', () => {
   createHelp();
 })
 
-ipcMain.on('openFrameSelect', (e, data) => {
-  createFrameSelect(data);
+ipcMain.on('openSelectFrame', (e, data) => {
+  createSelectFrame(data);
 })
 
 ipcMain.on('setFrameIndex', (e, index) => {
   win.webContents.send('setFrameIndex', index);
-  e.returnValue = index;
+})
+
+ipcMain.on('openSelectCondition', (e, data) => {
+  createSelectCondition(data);
+})
+
+ipcMain.on('setCondition', (e, data) => {
+  win.webContents.send('setCondition', data);
 })
