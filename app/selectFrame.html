@@ -1,0 +1,25 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Select a Frame</title>
+		<link rel="stylesheet" id="cssLight" href="css/styleLight.css">
+		<link rel="stylesheet" id="cssDark" href="css/styleDark.css">
+    <style>
+			#frameSelect {
+				padding: 5px;
+			}
+    </style>
+	</head>
+  <body oncontextmenu="return false;" class="secondary">
+		<div id="frameSelect"></div>
+		<script>
+			const theme = require('electron').ipcRenderer.sendSync('getTheme');
+			document.getElementById('cssLight').disabled = theme !== 'light';
+			document.getElementById('cssDark').disabled  = theme === 'light';
+			if (process.env.PRODUCTION === 'false') {
+				require('babel-register');
+			}
+			require('./js/selectFrame');
+		</script>
+	</body>
+</html>
