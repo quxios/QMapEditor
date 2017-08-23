@@ -8,6 +8,15 @@ import Notifications from './notifications'
 
 @observer
 export default class Layout extends React.Component {
+  componentDidMount() {
+    document.body.ondragover = document.body.ondrop = (e) => {
+      e.preventDefault();
+      return false;
+    }
+    document.body.ondragleave = document.body.ondragend = () => {
+      return false;
+    }
+  }
   render() {
     const {
       theme,
