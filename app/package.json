@@ -1,6 +1,6 @@
 {
   "name": "QMapEditor",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "main": "js/main.js",
   "author": "Quxios",
   "description": "Map Editor",
