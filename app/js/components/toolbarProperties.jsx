@@ -37,7 +37,9 @@ export default class ToolbarProperties extends React.Component {
       case 'y':
       case 'z': {
         if (!/^-?[0-9]*$/.test(value)) {
-          value = String(this.props.mapObject[prop]);
+          value = Number(this.props.mapObject[prop]);
+        } else {
+          value = Number(value) || 0;
         }
         break;
       }
@@ -47,7 +49,9 @@ export default class ToolbarProperties extends React.Component {
       case 'scaleY':
       case 'angle': {
         if (!/^-?[0-9]*(.[0-9]*)?$/.test(value)) {
-          value = String(this.props.mapObject[prop]);
+          value = Number(this.props.mapObject[prop]);
+        } else {
+          value = Number(value) || 0;
         }
         break;
       }
@@ -74,6 +78,7 @@ export default class ToolbarProperties extends React.Component {
     this.updateProperty(prop, value);
   }
   onWheel = (e) => {
+    e.preventDefault();
     const prop = e.target.name;
     const dir = e.deltaY > 0 ? -1 : 1;
     let value = Number(e.target.value) || 0;
@@ -95,7 +100,7 @@ export default class ToolbarProperties extends React.Component {
         break;
       }
     }
-    this.updateProperty(prop, String(value));
+    this.updateProperty(prop, value);
   }
   openFile = () => {
     remote.dialog.showOpenDialog({
