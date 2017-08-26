@@ -24,7 +24,7 @@ const SortableItem = SortableElement(observer(props => {
   let cls = isSelected ? 'selected' : '';
   if (isContextSelected) cls += ' contextSelected';
   const lockCls = mapObj.__locked ? 'locked' : 'unlocked';
-  const eyeCls = mapObj.__hidden ? 'visible' : 'hidden';
+  const eyeCls = mapObj.__hidden ? 'hidden' : 'visible';
   return (
     <li className={cls} onClick={onClick2} onContextMenu={onContext2}>
       <i className="handle" aria-hidden />
@@ -97,7 +97,7 @@ export default class ToolbarObjList extends React.Component {
       nextProps.selectedContext !== this.props.selectedContext
   }
   componentDidUpdate(prevProps) {
-    if (prevProps.currentMapObj !== this.props.currentMapObj) {
+    if (this.props.currentMap > 0 && prevProps.currentMapObj !== this.props.currentMapObj) {
       const selected = document.getElementById('ListMapObj').getElementsByClassName('selected');
       if (selected[0]) {
         selected[0].scrollIntoView(false);
