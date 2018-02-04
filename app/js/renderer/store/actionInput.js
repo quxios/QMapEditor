@@ -8,28 +8,25 @@ export default (C) => {
 
     constructor() {
       super();
-      document.addEventListener('keydown', ::this._onKeydown);
-      document.addEventListener('keyup', ::this._onKeyup);
+      document.addEventListener('keydown', this._onKeydown);
+      document.addEventListener('keyup', this._onKeyup);
     }
 
-    @action.bound
     isTriggered(keyCode) {
       return this._lastDown === keyCode;
     }
 
-    @action.bound
     isPressed(keyCode) {
       return this._keyState[keyCode];
     }
 
-    @action.bound
     isLongPressed(keyCode) {
       if (!this.isPressed(keyCode)) return false;
+      console.log(this._lastDown);
       const dt = Date.now() - this._keyState[keyCode];
       return this.isTriggered(keyCode) || dt > 300;
     }
 
-    @action.bound
     isReleased(keyCode) {
       return this._lastReleased === keyCode;
     }

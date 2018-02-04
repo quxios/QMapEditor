@@ -6,7 +6,7 @@ import { ipcRenderer } from 'electron'
 class Store extends Actions {
   @observable theme = '';
   @observable isLoaded = false;
-  @observable projectPath = ipcRenderer.sendSync('getDefaultPath');
+  @observable projectPath = ipcRenderer.sendSync('getProp', 'projectPath');
   @observable mapList = [];
   @observable qMap = [];
   @observable currentMap = -1;
@@ -35,6 +35,16 @@ class Store extends Actions {
     if (this.currentMapObj >= this.mapObjects.length) return null;
     return this.mapObjects[this.currentMapObj];
   }
+
+  getUserData(prop) {
+    return ipcRenderer.sendSync('getProp', prop);
+  }
+
+  setUserData(prop, value) {
+    ipcRenderer.send('setProp', prop, value);
+  }
 }
 
-export default new Store();
+let store = window.Store = new Store();
+
+export default store;

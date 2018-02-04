@@ -18,7 +18,7 @@ export default class Menubar extends React.Component {
         name: 'RPG Maker MV Project',
         extensions: ['rpgproject']
       }]
-    }, ::Store.load);
+    }, :: Store.load);
   }
   startWatch(file, projectFile) {
     fs.stat(file, (err, stats) => {
@@ -38,6 +38,14 @@ export default class Menubar extends React.Component {
   }
   openHelp = () => {
     ipcRenderer.send('openHelp');
+  }
+  changeTheme = () => {
+    let theme = Store.theme;
+    if (theme === 'styleLight') {
+      Store.changeTheme('styleDark');
+    } else {
+      Store.changeTheme('styleLight');
+    }
   }
   onFocus = () => {
     if (this.props.isLoaded && this._watching) {
@@ -74,20 +82,20 @@ export default class Menubar extends React.Component {
           <button onClick={this.openLoad}>
             Load
           </button>
-          { isLoaded &&
-            <button onClick={::Store.save}>
+          {isLoaded &&
+            <button onClick={Store.save.bind(Stage)}>
               Save
             </button>
           }
-          { isLoaded &&
-            <button onClick={::Stage.screenShot}>
+          {isLoaded &&
+            <button onClick={Stage.screenShot.bind(Stage)}>
               Screenshot
             </button>
           }
         </div>
         <div className="right">
-          <button onClick={::Store.changeTheme}>
-            { nextTheme }
+          <button onClick={this.changeTheme}>
+            {nextTheme}
           </button>
           <button onClick={this.openHelp}>
             Help

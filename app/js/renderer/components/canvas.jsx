@@ -1,6 +1,6 @@
 import React from 'react'
 import Store from './../store'
-import { ipcRenderer, screen } from 'electron'
+import { screen } from 'electron'
 import path from 'path';
 
 import Stage from './../display/stage'
@@ -9,7 +9,7 @@ const MENUBAR_HEIGHT = 34;
 
 export default class Canvas extends React.Component {
   componentWillMount() {
-    ipcRenderer.on('resize', this.onResize);
+    window.addEventListener('resize', this.onResize);
     window.addEventListener('mouseup', this.onMouseUp);
   }
   componentDidMount() {
@@ -22,6 +22,7 @@ export default class Canvas extends React.Component {
     if (this._isDragging) {
       this.updateDrag();
     }
+    Store.updateInput();
   }
   updateDrag() {
     const { x, y } = screen.getCursorScreenPoint();
@@ -32,8 +33,9 @@ export default class Canvas extends React.Component {
     this._mouseX = x;
     this._mouseY = y;
   }
-  onResize = (event, width, height) => {
-    height -= MENUBAR_HEIGHT;
+  onResize = () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight - MENUBAR_HEIGHT;
     Store.renderer.resize(width, height);
   }
   onClick = (event) => {
@@ -89,7 +91,7 @@ export default class Canvas extends React.Component {
         onClick={this.onClick}
         onMouseDown={this.onMouseDown}
         onWheel={this.onWheel}
-        onDragOver={() => {return false;}}
+        onDragOver={() => { return false; }}
         onDrop={this.onDrop}
       />
     )

@@ -30,9 +30,9 @@ class Stage extends PIXI.Container {
     this.addChild(this._mapEvents);
   }
   addListeners() {
-    observe(Store, 'currentMap', ::this.onCurrentMapChange);
+    observe(Store, 'currentMap', this.onCurrentMapChange);
   }
-  onCurrentMapChange(change) {
+  onCurrentMapChange = (change) => {
     PIXI.utils.clearTextureCache();
     const id = change.newValue;
     if (this._observing) {
@@ -45,7 +45,7 @@ class Stage extends PIXI.Container {
       this.setObjects(Store.mapObjects);
       this.drawMapBG();
       this.drawMapEvents(Store.mapData.events);
-      this._observing = observe(Store.mapObjects, ::this.onMapObjectsChange);
+      this._observing = observe(Store.mapObjects, :: this.onMapObjectsChange);
     } else {
       this.alpha = 0;
     }
@@ -75,7 +75,7 @@ class Stage extends PIXI.Container {
     this._gridHeight = height;
   }
   drawMapBG() {
-    const fullMapWidth  = this._mapWidth * this._gridWidth;
+    const fullMapWidth = this._mapWidth * this._gridWidth;
     const fullMapHeight = this._mapHeight * this._gridHeight;
     this._mapBG.clear();
     this._mapBG.beginFill(TILE_COLOR);
@@ -166,7 +166,7 @@ class Stage extends PIXI.Container {
   screenShot() {
     if (!Store.renderer) return;
     if (Store.currentMap > 0) {
-      const width  = this._mapWidth * 48;
+      const width = this._mapWidth * 48;
       const height = this._mapHeight * 48;
       const renderTexture = PIXI.RenderTexture.create(width, height);
       const selected = Store.currentMapObj;

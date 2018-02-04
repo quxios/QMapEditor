@@ -1,17 +1,4 @@
 {
-  "name": "QMapEditor",
-  "version": "3.0.2",
-  "main": "js/main.js",
-  "author": "Quxios",
-  "description": "Map Editor",
-  "license": "MIT",
-  "dependencies": {
-    "marked": "^0.3.6",
-    "mobx": "^3.1.9",
-    "mobx-react": "^4.1.8",
-    "pixi.js": "^4.5.0",
-    "react": "^15.3.2",
-    "react-dom": "^15.3.2",
-    "react-sortable-hoc": "^0.6.2"
-  }
+  "This is a fake package.json, real package.json is built with gulp": 0,
+  "version": "0.0.0"
 }

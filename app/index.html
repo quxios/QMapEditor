@@ -1,19 +1,20 @@
 <!DOCTYPE HTML>
 <html>
-	<head>
-		<title>Map Editor</title>
-		<link rel="stylesheet" id="cssLight" href="css/styleLight.css">
-		<link rel="stylesheet" id="cssDark" href="css/styleDark.css">
-	</head>
-  <body oncontextmenu="return false;">
-		<div id="app"></div>
-		<script>
-			if (process.env.PRODUCTION === 'false') {
-				require('babel-register');
-			}
-			require('pixi.js');
-			require('./js/css');
-			require('./js/app');
-		</script>
-	</body>
+
+<head>
+  <title>Map Editor</title>
+  <link rel="stylesheet" id="cssLight" href="css/styleLight.css">
+  <link rel="stylesheet" id="cssDark" href="css/styleDark.css">
+</head>
+
+<body oncontextmenu="return false;">
+  <div id="app"></div>
+  <script>
+    if (process.env.PRODUCTION === 'false') {
+      require('babel-register');
+    }
+    require('./js/renderer/app.js');
+  </script>
+</body>
+
 </html>

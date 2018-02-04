@@ -26,7 +26,7 @@ function toObj(string) {
       }
       var arr = toAry(match[2].trim());
       if (arr.length === 1) arr = arr[0];
-      obj[newKey] =  arr || '';
+      obj[newKey] = arr || '';
     }
   })
   return obj;
@@ -109,14 +109,14 @@ export default class Sprite extends PIXI.Sprite {
     this.buttonMode = true;
     this.interactive = !this._isLocked && !this._isHidden;
     this.interactiveChildren = false;
-    this.on('mousedown', ::this.startDrag);
-    this.on('mouseup', ::this.endDrag);
-    this.on('mouseupoutside', ::this.endDrag);
-    this.on('mousemove', ::this.onDrag);
-    this.on('mouseover', ::this.onOver);
-    this.on('mouseout', ::this.onOut);
-    this._observingA = observe(this._obj, ::this.onObjectChange);
-    this._observingB = observe(Store, 'mapObject', ::this.onMapObjectChange);
+    this.on('mousedown', :: this.startDrag);
+    this.on('mouseup', :: this.endDrag);
+    this.on('mouseupoutside', :: this.endDrag);
+    this.on('mousemove', :: this.onDrag);
+    this.on('mouseover', :: this.onOver);
+    this.on('mouseout', :: this.onOut);
+    this._observingA = observe(this._obj, :: this.onObjectChange);
+    this._observingB = observe(Store, 'mapObject', :: this.onMapObjectChange);
   }
   removeListeners() {
     this._observingA();
@@ -217,7 +217,7 @@ export default class Sprite extends PIXI.Sprite {
       newValue,
       object
     } = change;
-    if (name === 'x' || name === 'y' || name ==='z') {
+    if (name === 'x' || name === 'y' || name === 'z') {
       this.x = Number(object.x);
       this.y = Number(object.y);
       this.z = Number(object.z);
@@ -303,9 +303,9 @@ export default class Sprite extends PIXI.Sprite {
     } = this._obj;
     this.updateFrame();
     this._dataGraphic.clear();
-    let width  = this.texture.baseTexture.width;
+    let width = this.texture.baseTexture.width;
     let height = this.texture.baseTexture.height;
-    width  = Math.floor(width / cols);
+    width = Math.floor(width / cols);
     height = Math.floor(height / rows);
     const ox = anchorX * width;
     const oy = anchorY * height;
