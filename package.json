@@ -1,6 +1,6 @@
 {
   "name": "QMapEditor",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "main": "app/js/main/index.js",
   "author": "Quxios",
   "description": "Map Editor",
@@ -11,10 +11,10 @@
   },
   "scripts": {
     "start": "electron . --dev",
-    "build": "gulp prebuild & build --x64 --ia32 -p always"
+    "build": "gulp build & build --x64 --ia32 -p always"
   },
   "dependencies": {
-    "electron-updater": "^2.20.1",
+    "electron-updater": "2.16.1",
     "marked": "^0.3.6",
     "mobx": "^3.1.9",
     "mobx-react": "^4.1.8",
@@ -30,8 +30,8 @@
     "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "^6.24.1",
     "del": "^3.0.0",
-    "electron": "^1.7.12",
-    "electron-builder": "^19.55.3",
+    "electron": "1.7.9",
+    "electron-builder": "19.41.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
     "gulp-babel-minify": "^0.2.0",
@@ -46,7 +46,7 @@
       "app": "compiled"
     },
     "win": {
-      "target": "dir",
+      "target": "nsis",
       "icon": "app/imgs/icon.ico"
     },
     "nsis": {

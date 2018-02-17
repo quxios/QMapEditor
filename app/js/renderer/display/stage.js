@@ -45,7 +45,7 @@ class Stage extends PIXI.Container {
       this.setObjects(Store.mapObjects);
       this.drawMapBG();
       this.drawMapEvents(Store.mapData.events);
-      this._observing = observe(Store.mapObjects, :: this.onMapObjectsChange);
+      this._observing = observe(Store.mapObjects, this.onMapObjectsChange.bind(this));
     } else {
       this.alpha = 0;
     }

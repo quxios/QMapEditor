@@ -70,8 +70,8 @@ export default class Sprite extends PIXI.Sprite {
   }
   constructor(obj) {
     super();
-    this.x = Number(obj.x);
-    this.y = Number(obj.y);
+    this.x = this._tempX = Number(obj.x);
+    this.y = this._tempY = Number(obj.y);
     this.z = Number(obj.z);
     this.anchor.x = Number(obj.anchorX);
     this.anchor.y = Number(obj.anchorY);
@@ -109,14 +109,14 @@ export default class Sprite extends PIXI.Sprite {
     this.buttonMode = true;
     this.interactive = !this._isLocked && !this._isHidden;
     this.interactiveChildren = false;
-    this.on('mousedown', :: this.startDrag);
-    this.on('mouseup', :: this.endDrag);
-    this.on('mouseupoutside', :: this.endDrag);
-    this.on('mousemove', :: this.onDrag);
-    this.on('mouseover', :: this.onOver);
-    this.on('mouseout', :: this.onOut);
-    this._observingA = observe(this._obj, :: this.onObjectChange);
-    this._observingB = observe(Store, 'mapObject', :: this.onMapObjectChange);
+    this.on('mousedown', this.startDrag.bind(this));
+    this.on('mouseup', this.endDrag.bind(this));
+    this.on('mouseupoutside', this.endDrag.bind(this));
+    this.on('mousemove', this.onDrag.bind(this));
+    this.on('mouseover', this.onOver.bind(this));
+    this.on('mouseout', this.onOut.bind(this));
+    this._observingA = observe(this._obj, this.onObjectChange.bind(this));
+    this._observingB = observe(Store, 'mapObject', this.onMapObjectChange.bind(this));
   }
   removeListeners() {
     this._observingA();
@@ -136,6 +136,10 @@ export default class Sprite extends PIXI.Sprite {
       this._data = null;
       this._dragging = false;
       this.alpha = 1;
+      var x = this.x;
+      var y = this.y;
+      this._obj.x = x;
+      this._obj.y = y;
     }
   }
   onDrag(event) {
@@ -145,57 +149,37 @@ export default class Sprite extends PIXI.Sprite {
       const newPos = event.data.global;
       const dx = newPos.x - this._prevPos.x;
       const dy = newPos.y - this._prevPos.y;
-      const x = this._obj.x + dx / scaleX;
-      const y = this._obj.y + dy / scaleY;
-      this._obj.x = this.adjustXWithSnap(this._obj.x, x, dx);
-      this._obj.y = this.adjustYWithSnap(this._obj.y, y, dy);
+      const x = this._tempX + dx / scaleX;
+      const y = this._tempY + dy / scaleY;
+      this.x = this.adjustXWithSnap(x, dx, scaleX);
+      this.y = this.adjustYWithSnap(y, dy, scaleY);
+      console.log("drag:", this.y);
+      this._tempX = x;
+      this._tempY = y;
       this._prevPos = { ...newPos };
     }
   }
-  adjustXWithSnap(prevX, nextX, dx) {
-    // disabled for now
-    return nextX;
-    if (Store.isPressed(0x12)) return nextX;
-    let gridPos = nextX / Store.gridWidth;
-    let snapTo;
-    if (dx > 0) {
-      snapTo = Math.ceil(gridPos + 0.005) * Store.gridWidth;
-      if (snapTo - nextX < 2) {
-        nextX = snapTo;
-      } else if (snapTo - nextX > Store.gridWidth - 2) {
-        nextX = snapTo - Store.gridWidth;
-      }
-    } else if (dx < 0) {
-      snapTo = Math.floor(gridPos - 0.005) * Store.gridWidth;
-      if (nextX - snapTo < 2) {
-        nextX = snapTo;
-      } else if (nextX - snapTo > Store.gridWidth - 2) {
-        nextX = snapTo + Store.gridWidth;
-      }
+  adjustXWithSnap(nextX, dx, sx) {
+    if (Store.isPressed(0x12)) {
+      return nextX;
+    }
+    const offset = 10 / sx;
+    const posLeft = nextX % Store.gridWidth;
+    const posRight = Store.gridWidth - posLeft;
+    if (posLeft < offset || posRight > Store.gridWidth - offset) {
+      return Math.round(nextX / Store.gridWidth) * Store.gridWidth;
     }
     return nextX;
   }
-  adjustYWithSnap(prevY, nextY) {
-    // disabled for now
-    return nextY;
-    if (Store.isPressed(0x12)) return nextY;
-    let dy = nextY - prevY;
-    let gridPos = nextY / Store.gridHeight;
-    let snapTo;
-    if (dy > 0) {
-      snapTo = Math.ceil(gridPos + 0.005) * Store.gridHeight;
-      if (snapTo - nextY < 10) {
-        nextY = snapTo;
-      } else if (snapTo - nextY > Store.gridHeight - 2) {
-        nextY = snapTo - Store.gridHeight;
-      }
-    } else if (dy < 0) {
-      snapTo = Math.floor(gridPos - 0.005) * Store.gridHeight;
-      if (nextY - snapTo < 10) {
-        nextY = snapTo;
-      } else if (nextY - snapTo > Store.gridHeight - 2) {
-        nextY = snapTo + Store.gridHeight;
-      }
+  adjustYWithSnap(nextY, dy, sy) {
+    if (Store.isPressed(0x12)) {
+      return nextY;
+    }
+    const offset = 10 / sy;
+    const posLeft = nextY % Store.gridHeight;
+    const posRight = Store.gridHeight - posLeft;
+    if (posLeft < offset || posRight > Store.gridHeight - offset) {
+      return Math.round(nextY / Store.gridHeight) * Store.gridHeight;
     }
     return nextY;
   }
@@ -218,8 +202,8 @@ export default class Sprite extends PIXI.Sprite {
       object
     } = change;
     if (name === 'x' || name === 'y' || name === 'z') {
-      this.x = Number(object.x);
-      this.y = Number(object.y);
+      this.x = this._tempX = Number(object.x);
+      this.y = this._tempY = Number(object.y);
       this.z = Number(object.z);
     }
     if (name === 'z' || name === 'y') {

@@ -19,13 +19,14 @@ gulp.task('copy', ['clean'], () => {
 });
 
 gulp.task('buildES6', ['copy'], () => {
+  process.env.NODE_ENV = 'production';
   return gulp.src('./app/**/*.{js,jsx}')
     .pipe(babel())
-    //.pipe(minify())
+    .pipe(minify())
     .pipe(gulp.dest('./compiled'));
 })
 
-gulp.task('prebuild', ['buildES6'], () => {
+gulp.task('pkg', ['buildES6'], () => {
   const {
     name, version, main, author, description, license, dependencies
   } = require('./package.json');
@@ -36,3 +37,5 @@ gulp.task('prebuild', ['buildES6'], () => {
   }
   fs.writeFileSync('./compiled/package.json', JSON.stringify(pkg, null, 2));
 });
+
+gulp.task('build', ['clean', 'copy', 'buildES6', 'pkg'])

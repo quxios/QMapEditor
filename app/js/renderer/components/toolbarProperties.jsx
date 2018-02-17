@@ -37,9 +37,7 @@ export default class ToolbarProperties extends React.Component {
       case 'y':
       case 'z': {
         if (!/^-?[0-9]*$/.test(value)) {
-          value = Number(this.props.mapObject[prop]);
-        } else {
-          value = Number(value) || 0;
+          value = this.props.mapObject[prop];
         }
         break;
       }
@@ -48,10 +46,8 @@ export default class ToolbarProperties extends React.Component {
       case 'scaleX':
       case 'scaleY':
       case 'angle': {
-        if (!/^-?[0-9]*(.[0-9]*)?$/.test(value)) {
-          value = Number(this.props.mapObject[prop]);
-        } else {
-          value = Number(value) || 0;
+        if (!/^-?[0-9]*(\.?[0-9]*)?$/.test(value)) {
+          value = this.props.mapObject[prop];
         }
         break;
       }
@@ -100,7 +96,7 @@ export default class ToolbarProperties extends React.Component {
         break;
       }
     }
-    this.updateProperty(prop, value);
+    this.updateProperty(prop, String(value));
   }
   openFile = () => {
     remote.dialog.showOpenDialog({
@@ -189,15 +185,15 @@ export default class ToolbarProperties extends React.Component {
     // TODO make each block a seperate component?
     return (
       <div className="propsContainer">
-        { this.block1(name) }
-        { this.block2(x, y, z) }
-        { this.block3(scaleX, scaleY, angle) }
-        { !isQSprite && this.block4(anchorX, anchorY) }
-        { this.block5(filePath, type, pose, isQSprite) }
-        { !isQSprite && this.block6(type, cols, rows, index, speed) }
-        { this.block7(conditions) }
-        { this.block8(notes) }
-        { /*this.block9(meta)*/ }
+        {this.block1(name)}
+        {this.block2(x, y, z)}
+        {this.block3(scaleX, scaleY, angle)}
+        {!isQSprite && this.block4(anchorX, anchorY)}
+        {this.block5(filePath, type, pose, isQSprite)}
+        {!isQSprite && this.block6(type, cols, rows, index, speed)}
+        {this.block7(conditions)}
+        {this.block8(notes)}
+        { /*this.block9(meta)*/}
       </div>
     )
   }
@@ -367,7 +363,7 @@ export default class ToolbarProperties extends React.Component {
       if (poses.hasOwnProperty(pose)) {
         list.push(
           <option key={`pose-${pose}`} value={pose}>
-            { pose }
+            {pose}
           </option>
         )
       }
@@ -389,7 +385,7 @@ export default class ToolbarProperties extends React.Component {
         <div className="half">
           <select value={pose} onChange={this.onChange} name="pose">
             <option value=""></option>
-            { list }
+            {list}
           </select>
         </div>
       </div>
@@ -464,7 +460,7 @@ export default class ToolbarProperties extends React.Component {
           Conditions
         </div>
         <div className="full conditions">
-          { conditions.map((v, i) => {
+          {conditions.map((v, i) => {
             const {
               type,
               value
@@ -494,7 +490,7 @@ export default class ToolbarProperties extends React.Component {
               </div>
             )
           })}
-      </div>
+        </div>
         <div className="full">
           <button value="-1" onClick={this.openSelectCondition}>
             New Condition
@@ -531,7 +527,7 @@ export default class ToolbarProperties extends React.Component {
             New
           </button>
         </div>
-        { /* TODO show list of set extras here */ }
+        { /* TODO show list of set extras here */}
       </div>
     )
   }
@@ -545,7 +541,7 @@ export default class ToolbarProperties extends React.Component {
     return (
       <div className="toolbar properties" style={style}>
         <div className="header">Object Properties</div>
-        { mapObject && this.body() }
+        {mapObject && this.body()}
       </div>
     )
   }
