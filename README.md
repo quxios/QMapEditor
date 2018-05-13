@@ -1,3 +1,5 @@
+**NO LONGER SUPPORTED**
+
 ## QMap Editor 4.0.1
 
 ## How to run
